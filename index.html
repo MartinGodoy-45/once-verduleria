@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F7A4D">
+<title>once · verdulería</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <span class="brand">once</span>
+  <span class="brand-sub">verdulería</span>
+</header>
+
+<main id="vista-catalogo">
+  <div id="lista-productos" class="grid-productos">
+    <p class="muted">Cargando productos…</p>
+  </div>
+</main>
+
+<footer id="barra-carrito" class="barra-carrito oculto">
+  <button id="btn-ver-carrito" class="btn-primario">
+    <span id="carrito-cantidad">0</span> productos · <span id="carrito-total">$0</span>
+  </button>
+</footer>
+
+<section id="vista-carrito" class="panel oculto">
+  <div class="panel-header">
+    <h2>Tu changuito</h2>
+    <button class="btn-texto" id="btn-cerrar-carrito">Volver</button>
+  </div>
+  <div id="lista-carrito"></div>
+  <div class="total-row">
+    <span>Total</span>
+    <strong id="carrito-total-2">$0</strong>
+  </div>
+  <button id="btn-ir-pago" class="btn-primario btn-ancho">Pagar</button>
+</section>
+
+<section id="vista-pago" class="panel oculto">
+  <div class="panel-header">
+    <h2>¿Cómo pagás?</h2>
+    <button class="btn-texto" id="btn-cerrar-pago">Volver</button>
+  </div>
+  <div class="metodos-pago">
+    <button class="metodo-pago" data-metodo="efectivo">
+      <span class="metodo-titulo">Efectivo</span>
+      <span class="metodo-sub">Pagás en el mostrador</span>
+    </button>
+    <button class="metodo-pago" data-metodo="transferencia">
+      <span class="metodo-titulo">Transferencia</span>
+      <span class="metodo-sub">Por alias, confirmamos al ver el ingreso</span>
+    </button>
+    <button class="metodo-pago" disabled>
+      <span class="metodo-titulo">QR Mercado Pago</span>
+      <span class="metodo-sub">Próximamente</span>
+    </button>
+  </div>
+</section>
+
+<section id="vista-espera" class="panel oculto">
+  <div class="espera-contenido">
+    <p class="espera-numero" id="espera-numero-pedido">Pedido</p>
+    <p class="espera-monto" id="espera-monto">$0</p>
+    <p id="espera-estado" class="espera-estado">Esperando confirmación</p>
+    <p class="muted" id="espera-instrucciones"></p>
+    <button id="btn-nuevo-pedido" class="btn-texto oculto">Hacer otro pedido</button>
+  </div>
+</section>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

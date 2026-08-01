@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>once · panel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <span class="brand">once</span>
+  <span class="brand-sub">panel</span>
+</header>
+
+<section id="vista-login" class="admin-contenido">
+  <form id="form-login" class="form-login">
+    <label>Email
+      <input type="email" id="login-email" required autocomplete="username">
+    </label>
+    <label>Contraseña
+      <input type="password" id="login-password" required autocomplete="current-password">
+    </label>
+    <button type="submit" class="btn-primario btn-ancho">Entrar</button>
+    <p id="login-error" class="error oculto"></p>
+  </form>
+</section>
+
+<main id="vista-panel" class="admin-contenido oculto">
+
+  <section class="bloque">
+    <h2>Pendientes de confirmar</h2>
+    <div id="lista-pendientes"><p class="muted">Cargando…</p></div>
+  </section>
+
+  <section class="bloque">
+    <h2>Hoy</h2>
+    <div id="resumen-hoy" class="resumen-grid"></div>
+  </section>
+
+  <button id="btn-salir" class="btn-texto">Cerrar sesión</button>
+</main>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>

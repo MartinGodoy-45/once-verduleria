@@ -1,0 +1,332 @@
+:root {
+  --verde: #2F7A4D;
+  --verde-oscuro: #1F5636;
+  --tomate: #D8572E;
+  --crema: #FAF7F0;
+  --texto: #2B2B26;
+  --texto-suave: #6B6A62;
+  --borde: #E7E2D6;
+  --blanco: #FFFFFF;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--crema);
+  color: var(--texto);
+  padding-bottom: 88px;
+}
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 20px 20px 12px;
+}
+
+.brand {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+}
+
+.brand-sub {
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.muted { color: var(--texto-suave); font-size: 14px; }
+
+.grid-productos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 4px 20px 20px;
+}
+
+.tarjeta-producto {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tarjeta-producto .nombre {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.tarjeta-producto .precio {
+  color: var(--texto-suave);
+  font-size: 13px;
+}
+
+.tarjeta-producto .fila-cantidad {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.btn-cantidad {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--borde);
+  background: var(--crema);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--verde-oscuro);
+}
+
+.btn-agregar {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  background: var(--verde);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.barra-carrito {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+  background: var(--crema);
+  border-top: 1px solid var(--borde);
+}
+
+.btn-primario {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--verde);
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.btn-ancho { margin-top: 16px; }
+
+.btn-texto {
+  background: none;
+  border: none;
+  color: var(--verde-oscuro);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.panel {
+  position: fixed;
+  inset: 0;
+  background: var(--crema);
+  padding: 20px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.panel-header h2 { margin: 0; font-size: 20px; }
+
+.fila-carrito {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borde);
+  font-size: 14px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  font-size: 16px;
+}
+
+.metodos-pago {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.metodo-pago {
+  text-align: left;
+  padding: 16px;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  background: var(--blanco);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metodo-pago:disabled { opacity: 0.5; }
+
+.metodo-titulo { font-weight: 600; font-size: 15px; }
+.metodo-sub { font-size: 13px; color: var(--texto-suave); }
+
+.espera-contenido {
+  text-align: center;
+  padding-top: 80px;
+}
+
+.espera-numero { color: var(--texto-suave); font-size: 14px; margin-bottom: 4px; }
+.espera-monto { font-size: 32px; font-weight: 700; margin: 0 0 16px; }
+
+.espera-estado {
+  display: inline-block;
+  background: #FAEEDA;
+  color: #854F0B;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.espera-estado.pagado { background: #EAF3DE; color: #3B6D11; }
+.espera-estado.vencido { background: #FCEBEB; color: #A32D2D; }
+
+.oculto { display: none !important; }
+
+/* --- Panel de admin --- */
+
+.admin-contenido {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.form-login {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 40px;
+}
+
+.form-login label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.form-login input {
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.error { color: var(--tomate); font-size: 14px; }
+
+.bloque { margin-bottom: 28px; }
+.bloque h2 { font-size: 16px; margin: 0 0 12px; }
+
+.fila-pendiente {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.fila-titulo { font-weight: 600; font-size: 14px; margin: 0; }
+
+.btn-confirmar {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--verde);
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.resumen-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.resumen-item {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.resumen-item strong { font-size: 18px; }
+
+/* --- Input de kg para productos por peso --- */
+
+.fila-peso {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.input-peso {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font-size: 15px;
+  text-align: right;
+}
+
+.unidad-kg {
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.btn-quitar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--borde);
+  background: var(--crema);
+  color: var(--tomate);
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* --- Foto del producto --- */
+
+.foto-producto {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px;
+  background: var(--crema);
+}
+
+.foto-vacia {
+  background: linear-gradient(135deg, var(--borde), var(--crema));
+}
