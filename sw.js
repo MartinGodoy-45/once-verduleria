@@ -1,4 +1,4 @@
-const CACHE = 'once-v3'
+const CACHE = 'once-v4'
 const ARCHIVOS = ['./', 'index.html', 'style.css', 'app.js', 'manifest.json']
 
 self.addEventListener('install', (e) => {

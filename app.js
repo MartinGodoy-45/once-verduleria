@@ -79,11 +79,12 @@ function renderProductos() {
           <button class="btn-quitar" data-id="${p.id}" aria-label="Quitar ${p.nombre}">×</button>
         </div>`
     } else {
-      // Por unidad: el +1/-1 de siempre, acá sí tiene sentido
+      // Por unidad: +/-1 para ajustes rápidos, pero el número también se puede tipear
+      // directo (para "cartón de 35 huevos" nadie va a tocar + treinta y cinco veces)
       controles = `
         <div class="fila-cantidad">
           <button class="btn-cantidad" data-id="${p.id}" data-accion="restar">−</button>
-          <span>${cantidad}</span>
+          <input type="number" class="input-unidad" data-id="${p.id}" min="1" step="1" value="${cantidad}">
           <button class="btn-cantidad" data-id="${p.id}" data-accion="sumar">+</button>
         </div>`
     }
@@ -121,9 +122,9 @@ elLista.addEventListener('click', (e) => {
   actualizarBarraCarrito()
 })
 
-// Cuando tocan/escriben en el input de kg
+// Cuando tocan/escriben en el input de kg o de unidades
 elLista.addEventListener('change', (e) => {
-  const input = e.target.closest('.input-peso')
+  const input = e.target.closest('.input-peso, .input-unidad')
   if (!input) return
   const valor = parseFloat(input.value)
   const id = input.dataset.id
