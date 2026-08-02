@@ -86,10 +86,13 @@ function renderProductos() {
     }
 
     card.innerHTML = `
-      ${p.foto_url
-        ? `<img class="foto-producto${esPeso ? ' foto-pesable' : ''}" src="${p.foto_url}" alt="${p.nombre}" data-id="${p.id}" loading="lazy">`
-        : `<div class="foto-producto foto-vacia${esPeso ? ' foto-pesable' : ''}" data-id="${p.id}"></div>`
-      }
+      <div class="foto-wrap">
+        ${p.foto_url
+          ? `<img class="foto-producto${esPeso ? ' foto-pesable' : ''}${cantidad > 0 ? ' en-carrito' : ''}" src="${p.foto_url}" alt="${p.nombre}" data-id="${p.id}" loading="lazy">`
+          : `<div class="foto-producto foto-vacia${esPeso ? ' foto-pesable' : ''}${cantidad > 0 ? ' en-carrito' : ''}" data-id="${p.id}"></div>`
+        }
+        ${cantidad > 0 ? '<span class="badge-check">✓</span>' : ''}
+      </div>
       <span class="nombre">${p.nombre}</span>
       <span class="precio">${formatoMoneda(p.precio)}${unidad}</span>
       ${controles}
@@ -308,9 +311,19 @@ document.getElementById('btn-nuevo-pedido').addEventListener('click', () => {
 })
 
 // --- Service worker (para que se pueda instalar y funcione offline el shell) ---
-if ('serviceWorker' in navigator) {
+// El service worker queda pausado mientras seguimos probando cambios seguido:
+// el cacheo agresivo estaba haciendo que vieran versiones viejas todo el tiempo.
+// Lo reactivamos cuando el sistema esté estable, para la versión "final".
+const SERVICE_WORKER_ACTIVO = false
+
+if (SERVICE_WORKER_ACTIVO && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js').catch(console.error)
+  })
+} else if ('serviceWorker' in navigator) {
+  // Por las dudas, si alguien ya tenía uno registrado de antes, lo sacamos
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister())
   })
 }
 
