@@ -31,7 +31,7 @@ function formatoMoneda(n) {
 }
 
 function mostrar(vista) {
-  ;[vistaCarrito, vistaPago, vistaEspera].forEach(v => v.classList.add('oculto'))
+  ;[vistaCarrito, vistaPago, vistaEspera, document.getElementById('vista-pesaje')].forEach(v => v.classList.add('oculto'))
   if (vista) vista.classList.remove('oculto')
 }
 
@@ -53,8 +53,7 @@ async function cargarProductos() {
   renderProductos()
 }
 
-// Cuánto suma cada toque de "Agregar" la primera vez, y cada +/- después
-const PASO_PESO = 0.5 // kg
+// Cuánto suma cada toque de +/- en productos por unidad
 const PASO_UNIDAD = 1
 
 function renderProductos() {
@@ -67,17 +66,14 @@ function renderProductos() {
     card.className = 'tarjeta-producto'
 
     let controles
-    if (cantidad === 0) {
+    if (esPeso) {
+      // La foto es el botón: tocarla abre la pantalla grande de pesaje.
+      // Acá abajo solo mostramos un resumen de lo que ya está en el carrito.
+      controles = cantidad > 0
+        ? `<p class="resumen-peso">En el carrito: ${cantidad} kg · tocá la foto para editar</p>`
+        : `<p class="muted resumen-peso">Tocá la foto para pesar</p>`
+    } else if (cantidad === 0) {
       controles = `<button class="btn-agregar" data-id="${p.id}">Agregar</button>`
-    } else if (esPeso) {
-      // Por peso: input numérico con decimales, no tiene sentido un +1/-1 fijo
-      controles = `
-        <div class="fila-peso">
-          <input type="number" class="input-peso" data-id="${p.id}"
-                 min="0.1" step="0.1" inputmode="decimal" value="${cantidad}">
-          <span class="unidad-kg">kg</span>
-          <button class="btn-quitar" data-id="${p.id}" aria-label="Quitar ${p.nombre}">×</button>
-        </div>`
     } else {
       // Por unidad: +/-1 para ajustes rápidos, pero el número también se puede tipear
       // directo (para "cartón de 35 huevos" nadie va a tocar + treinta y cinco veces)
@@ -91,8 +87,8 @@ function renderProductos() {
 
     card.innerHTML = `
       ${p.foto_url
-        ? `<img class="foto-producto" src="${p.foto_url}" alt="${p.nombre}" loading="lazy">`
-        : `<div class="foto-producto foto-vacia"></div>`
+        ? `<img class="foto-producto${esPeso ? ' foto-pesable' : ''}" src="${p.foto_url}" alt="${p.nombre}" data-id="${p.id}" loading="lazy">`
+        : `<div class="foto-producto foto-vacia${esPeso ? ' foto-pesable' : ''}" data-id="${p.id}"></div>`
       }
       <span class="nombre">${p.nombre}</span>
       <span class="precio">${formatoMoneda(p.precio)}${unidad}</span>
@@ -103,15 +99,18 @@ function renderProductos() {
 }
 
 elLista.addEventListener('click', (e) => {
+  const foto = e.target.closest('.foto-pesable')
+  if (foto) {
+    abrirPesaje(foto.dataset.id)
+    return
+  }
+
   const btn = e.target.closest('button')
   if (!btn) return
   const id = btn.dataset.id
-  const producto = productos.find(p => p.id === id)
 
   if (btn.classList.contains('btn-agregar')) {
-    carrito[id] = producto.tipo === 'peso' ? PASO_PESO : PASO_UNIDAD
-  } else if (btn.classList.contains('btn-quitar')) {
-    delete carrito[id]
+    carrito[id] = PASO_UNIDAD
   } else if (btn.dataset.accion === 'sumar') {
     carrito[id] = (carrito[id] || 0) + PASO_UNIDAD
   } else if (btn.dataset.accion === 'restar') {
@@ -122,9 +121,9 @@ elLista.addEventListener('click', (e) => {
   actualizarBarraCarrito()
 })
 
-// Cuando tocan/escriben en el input de kg o de unidades
+// Cuando tipean directo la cantidad de unidades (ej. "35" para un cartón de huevos)
 elLista.addEventListener('change', (e) => {
-  const input = e.target.closest('.input-peso, .input-unidad')
+  const input = e.target.closest('.input-unidad')
   if (!input) return
   const valor = parseFloat(input.value)
   const id = input.dataset.id
@@ -135,6 +134,49 @@ elLista.addEventListener('change', (e) => {
   }
   renderProductos()
   actualizarBarraCarrito()
+})
+
+// --- Pantalla grande de pesaje ---
+let pesajeProductoId = null
+const elPesajeNombre = document.getElementById('pesaje-nombre')
+const elPesajeInput = document.getElementById('pesaje-input')
+const elPesajePrecioKg = document.getElementById('pesaje-precio-kg')
+const elPesajeSubtotal = document.getElementById('pesaje-subtotal')
+const vistaPesaje = document.getElementById('vista-pesaje')
+
+function abrirPesaje(id) {
+  const p = productos.find(p => p.id === id)
+  if (!p) return
+  pesajeProductoId = id
+  elPesajeNombre.textContent = p.nombre
+  elPesajePrecioKg.textContent = `${formatoMoneda(p.precio)}/kg`
+  elPesajeInput.value = carrito[id] || ''
+  actualizarSubtotalPesaje()
+  mostrar(vistaPesaje)
+  elPesajeInput.focus()
+  elPesajeInput.select()
+}
+
+function actualizarSubtotalPesaje() {
+  const p = productos.find(p => p.id === pesajeProductoId)
+  const kg = parseFloat(elPesajeInput.value) || 0
+  elPesajeSubtotal.textContent = formatoMoneda(kg * (p ? p.precio : 0))
+}
+
+elPesajeInput.addEventListener('input', actualizarSubtotalPesaje)
+
+document.getElementById('btn-cerrar-pesaje').addEventListener('click', () => mostrar(null))
+
+document.getElementById('btn-agregar-pesaje').addEventListener('click', () => {
+  const valor = parseFloat(elPesajeInput.value)
+  if (!valor || valor <= 0) {
+    delete carrito[pesajeProductoId]
+  } else {
+    carrito[pesajeProductoId] = valor
+  }
+  renderProductos()
+  actualizarBarraCarrito()
+  mostrar(null)
 })
 
 function totalCarrito() {

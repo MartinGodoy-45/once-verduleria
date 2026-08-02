@@ -58,12 +58,13 @@ body {
 
 .tarjeta-producto .nombre {
   font-weight: 600;
-  font-size: 15px;
+  font-size: 17px;
 }
 
 .tarjeta-producto .precio {
   color: var(--texto-suave);
-  font-size: 13px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .tarjeta-producto .fila-cantidad {
@@ -148,16 +149,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--borde);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .total-row {
   display: flex;
   justify-content: space-between;
   padding-top: 16px;
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .metodos-pago {
@@ -179,8 +180,8 @@ body {
 
 .metodo-pago:disabled { opacity: 0.5; }
 
-.metodo-titulo { font-weight: 600; font-size: 15px; }
-.metodo-sub { font-size: 13px; color: var(--texto-suave); }
+.metodo-titulo { font-weight: 600; font-size: 17px; }
+.metodo-sub { font-size: 15px; color: var(--texto-suave); }
 
 .espera-contenido {
   text-align: center;
@@ -281,41 +282,6 @@ body {
 
 .resumen-item strong { font-size: 18px; }
 
-/* --- Input de kg para productos por peso --- */
-
-.fila-peso {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.input-peso {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 10px;
-  border: 1px solid var(--borde);
-  border-radius: 8px;
-  font-size: 15px;
-  text-align: right;
-}
-
-.unidad-kg {
-  font-size: 13px;
-  color: var(--texto-suave);
-}
-
-.btn-quitar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--borde);
-  background: var(--crema);
-  color: var(--tomate);
-  font-size: 16px;
-  line-height: 1;
-  flex-shrink: 0;
-}
 
 /* --- Foto del producto --- */
 
@@ -372,4 +338,54 @@ body {
   font-size: 13px;
   color: var(--texto-suave);
   padding: 3px 0;
+}
+
+
+/* --- Pantalla grande de pesaje --- */
+
+.foto-pesable { cursor: pointer; }
+
+.resumen-peso {
+  font-size: 13px;
+  color: var(--texto-suave);
+  margin: 2px 0 0;
+}
+
+.pesaje-contenido {
+  text-align: center;
+  padding-top: 40px;
+}
+
+.pesaje-input-fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.input-pesaje-grande {
+  width: 160px;
+  font-size: 56px;
+  font-weight: 700;
+  text-align: right;
+  border: none;
+  background: none;
+  color: var(--verde-oscuro);
+}
+
+.pesaje-unidad {
+  font-size: 24px;
+  color: var(--texto-suave);
+}
+
+.pesaje-precio-kg {
+  color: var(--texto-suave);
+  font-size: 15px;
+  margin: 8px 0 0;
+}
+
+.pesaje-subtotal {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 16px 0 0;
 }

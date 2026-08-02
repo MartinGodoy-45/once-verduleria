@@ -73,6 +73,22 @@
   </div>
 </section>
 
+<section id="vista-pesaje" class="panel oculto">
+  <div class="panel-header">
+    <h2 id="pesaje-nombre">Producto</h2>
+    <button class="btn-texto" id="btn-cerrar-pesaje">Cancelar</button>
+  </div>
+  <div class="pesaje-contenido">
+    <div class="pesaje-input-fila">
+      <input type="number" id="pesaje-input" class="input-pesaje-grande" min="0.1" step="0.1" inputmode="decimal" value="0.0">
+      <span class="pesaje-unidad">kg</span>
+    </div>
+    <p class="pesaje-precio-kg" id="pesaje-precio-kg"></p>
+    <p class="pesaje-subtotal" id="pesaje-subtotal">$0</p>
+  </div>
+  <button id="btn-agregar-pesaje" class="btn-primario btn-ancho">Agregar al carrito</button>
+</section>
+
 <script type="module" src="app.js"></script>
 </body>
 </html>
