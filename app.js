@@ -227,12 +227,11 @@ document.querySelectorAll('.metodo-pago[data-metodo]').forEach(btn => {
 async function crearPedido(metodo) {
   const estadoInicial = metodo === 'efectivo' ? 'pendiente_efectivo' : 'pendiente_transferencia'
   const total = totalCarrito()
+  const nuevoPedidoId = crypto.randomUUID()
 
-  const { data: pedido, error: errorPedido } = await supabase
+  const { error: errorPedido } = await supabase
     .from('pedidos')
-    .insert({ estado: estadoInicial, metodo_pago: metodo, monto_total: total })
-    .select()
-    .single()
+    .insert({ id: nuevoPedidoId, estado: estadoInicial, metodo_pago: metodo, monto_total: total })
 
   if (errorPedido) {
     alert('No se pudo crear el pedido. Probá de nuevo.')
@@ -243,7 +242,7 @@ async function crearPedido(metodo) {
   const items = Object.entries(carrito).map(([producto_id, cantidad]) => {
     const p = productos.find(p => p.id === producto_id)
     return {
-      pedido_id: pedido.id,
+      pedido_id: nuevoPedidoId,
       producto_id,
       cantidad,
       precio_unitario: p.precio,
@@ -257,7 +256,7 @@ async function crearPedido(metodo) {
     console.error(errorItems)
   }
 
-  pedidoActualId = pedido.id
+  pedidoActualId = nuevoPedidoId
   mostrarEspera(metodo, total)
   carrito = {}
   renderProductos()
