@@ -339,3 +339,37 @@ body {
   padding: 4px;
   font-size: 15px;
 }
+
+/* --- Detalle de productos por pedido, en el panel --- */
+
+.detalle-pedido {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.detalle-pedido summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+
+.detalle-pedido summary::-webkit-details-marker { display: none; }
+
+.detalle-items {
+  margin: 10px 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--borde);
+}
+
+.item-detalle {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--texto-suave);
+  padding: 3px 0;
+}

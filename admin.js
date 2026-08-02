@@ -74,17 +74,44 @@ async function cargarPendientes() {
     return
   }
 
+  // Traemos los items de todos los pedidos pendientes en paralelo
+  const pedidosConItems = await Promise.all(
+    data.map(async (pedido) => {
+      const { data: items } = await supabase
+        .from('pedido_items')
+        .select('cantidad, subtotal, productos(nombre, tipo)')
+        .eq('pedido_id', pedido.id)
+      return { ...pedido, items: items || [] }
+    })
+  )
+
+  // Antes de redibujar, anotamos qué pedidos tenía abiertos, para no cerrarlos de golpe
+  const abiertos = new Set(
+    Array.from(listaPendientes.querySelectorAll('details[open]')).map(d => d.dataset.id)
+  )
+
   listaPendientes.innerHTML = ''
-  data.forEach(pedido => {
+  pedidosConItems.forEach(pedido => {
     const metodoTexto = pedido.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'
+    const filaItems = pedido.items.map(it => {
+      const unidad = it.productos?.tipo === 'peso' ? 'kg' : ''
+      return `<div class="item-detalle">
+        <span>${it.productos?.nombre || '?'} · ${it.cantidad}${unidad}</span>
+        <span>${formatoMoneda(it.subtotal)}</span>
+      </div>`
+    }).join('')
+
     const fila = document.createElement('div')
-    fila.className = 'fila-pendiente'
+    fila.className = 'fila-pendiente-wrap'
     fila.innerHTML = `
-      <div>
-        <p class="fila-titulo">Pedido #${pedido.id.slice(0, 8)}</p>
-        <p class="muted">${formatoMoneda(pedido.monto_total)} · ${metodoTexto}</p>
-      </div>
-      <button class="btn-confirmar" data-id="${pedido.id}">Confirmar</button>
+      <details class="detalle-pedido" data-id="${pedido.id}" ${abiertos.has(pedido.id) ? 'open' : ''}>
+        <summary>
+          <span class="fila-titulo">Pedido #${pedido.id.slice(0, 8)}</span>
+          <span class="muted">${formatoMoneda(pedido.monto_total)} · ${metodoTexto}</span>
+        </summary>
+        <div class="detalle-items">${filaItems || '<p class="muted">Sin productos cargados</p>'}</div>
+        <button class="btn-confirmar" data-id="${pedido.id}">Confirmar</button>
+      </details>
     `
     listaPendientes.appendChild(fila)
   })
