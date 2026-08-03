@@ -110,7 +110,10 @@ async function cargarPendientes() {
           <span class="muted">${formatoMoneda(pedido.monto_total)} · ${metodoTexto}</span>
         </summary>
         <div class="detalle-items">${filaItems || '<p class="muted">Sin productos cargados</p>'}</div>
-        <button class="btn-confirmar" data-id="${pedido.id}">Confirmar</button>
+        <div class="acciones-pedido">
+          <button class="btn-confirmar" data-id="${pedido.id}">Confirmar</button>
+          <button class="btn-cancelar" data-id="${pedido.id}">Cancelar</button>
+        </div>
       </details>
     `
     listaPendientes.appendChild(fila)
@@ -118,6 +121,22 @@ async function cargarPendientes() {
 }
 
 listaPendientes.addEventListener('click', async (e) => {
+  const btnCancelar = e.target.closest('.btn-cancelar')
+  if (btnCancelar) {
+    if (!confirm('¿Cancelar este pedido? No se puede deshacer.')) return
+    const { error } = await supabase
+      .from('pedidos')
+      .update({ estado: 'cancelado' })
+      .eq('id', btnCancelar.dataset.id)
+    if (error) {
+      alert('No se pudo cancelar. Probá de nuevo.')
+      console.error(error)
+      return
+    }
+    cargarPendientes()
+    return
+  }
+
   const btn = e.target.closest('.btn-confirmar')
   if (!btn) return
   btn.disabled = true

@@ -428,3 +428,20 @@ body {
   padding: 6px 12px;
   border-radius: 20px;
 }
+
+.acciones-pedido {
+  display: flex;
+  gap: 8px;
+}
+
+.acciones-pedido .btn-confirmar { flex: 1; }
+
+.btn-cancelar {
+  padding: 8px 14px;
+  border: 1px solid var(--tomate);
+  border-radius: 8px;
+  background: none;
+  color: var(--tomate);
+  font-weight: 600;
+  font-size: 13px;
+}

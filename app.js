@@ -322,7 +322,8 @@ function iniciarPolling() {
       document.getElementById('btn-nuevo-pedido').classList.remove('oculto')
       clearInterval(pollingInterval)
     } else if (estado === 'vencido' || estado === 'cancelado') {
-      document.getElementById('espera-estado').textContent = 'Pedido vencido'
+      document.getElementById('espera-estado').textContent =
+        estado === 'cancelado' ? 'Pedido cancelado' : 'Pedido vencido'
       document.getElementById('espera-estado').className = 'espera-estado vencido'
       document.getElementById('btn-nuevo-pedido').classList.remove('oculto')
       clearInterval(pollingInterval)
