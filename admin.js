@@ -106,7 +106,7 @@ async function cargarPendientes() {
     fila.innerHTML = `
       <details class="detalle-pedido" data-id="${pedido.id}" ${abiertos.has(pedido.id) ? 'open' : ''}>
         <summary>
-          <span class="fila-titulo">Pedido #${pedido.id.slice(0, 8)}</span>
+          <span class="fila-titulo">Pedido #${pedido.numero_corto}</span>
           <span class="muted">${formatoMoneda(pedido.monto_total)} · ${metodoTexto}</span>
         </summary>
         <div class="detalle-items">${filaItems || '<p class="muted">Sin productos cargados</p>'}</div>

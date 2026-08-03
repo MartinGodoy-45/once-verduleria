@@ -11,7 +11,26 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 let productos = []
 let carrito = {} // { producto_id: cantidad }
 let pedidoActualId = null
+let pedidoNumeroCorto = null
 let pollingInterval = null
+
+const elBadgePedido = document.getElementById('badge-pedido')
+
+// Crea el pedido en la base la primera vez que el cliente agrega algo,
+// no recién al pagar -- así ya tiene su número asignado desde el arranque
+// (lo vamos a necesitar para el mostrador, y después para la balanza).
+async function asegurarPedido() {
+  if (pedidoActualId) return
+  const { data, error } = await supabase.rpc('crear_pedido')
+  if (error || !data || !data[0]) {
+    console.error(error)
+    return
+  }
+  pedidoActualId = data[0].id
+  pedidoNumeroCorto = data[0].numero_corto
+  elBadgePedido.textContent = 'Pedido #' + pedidoNumeroCorto
+  elBadgePedido.classList.remove('oculto')
+}
 
 // --- Elementos ---
 const elLista = document.getElementById('lista-productos')
@@ -101,7 +120,7 @@ function renderProductos() {
   })
 }
 
-elLista.addEventListener('click', (e) => {
+elLista.addEventListener('click', async (e) => {
   const foto = e.target.closest('.foto-pesable')
   if (foto) {
     abrirPesaje(foto.dataset.id)
@@ -113,6 +132,7 @@ elLista.addEventListener('click', (e) => {
   const id = btn.dataset.id
 
   if (btn.classList.contains('btn-agregar')) {
+    await asegurarPedido()
     carrito[id] = PASO_UNIDAD
   } else if (btn.dataset.accion === 'sumar') {
     carrito[id] = (carrito[id] || 0) + PASO_UNIDAD
@@ -170,11 +190,12 @@ elPesajeInput.addEventListener('input', actualizarSubtotalPesaje)
 
 document.getElementById('btn-cerrar-pesaje').addEventListener('click', () => mostrar(null))
 
-document.getElementById('btn-agregar-pesaje').addEventListener('click', () => {
+document.getElementById('btn-agregar-pesaje').addEventListener('click', async () => {
   const valor = parseFloat(elPesajeInput.value)
   if (!valor || valor <= 0) {
     delete carrito[pesajeProductoId]
   } else {
+    await asegurarPedido()
     carrito[pesajeProductoId] = valor
   }
   renderProductos()
@@ -224,28 +245,19 @@ document.getElementById('btn-cerrar-pago').addEventListener('click', () => mostr
 
 // --- Checkout ---
 document.querySelectorAll('.metodo-pago[data-metodo]').forEach(btn => {
-  btn.addEventListener('click', () => crearPedido(btn.dataset.metodo))
+  btn.addEventListener('click', () => confirmarPedido(btn.dataset.metodo))
 })
 
-async function crearPedido(metodo) {
-  const estadoInicial = metodo === 'efectivo' ? 'pendiente_efectivo' : 'pendiente_transferencia'
-  const total = totalCarrito()
-  const nuevoPedidoId = crypto.randomUUID()
-
-  const { error: errorPedido } = await supabase
-    .from('pedidos')
-    .insert({ id: nuevoPedidoId, estado: estadoInicial, metodo_pago: metodo, monto_total: total })
-
-  if (errorPedido) {
-    alert('No se pudo crear el pedido. Probá de nuevo.')
-    console.error(errorPedido)
+async function confirmarPedido(metodo) {
+  if (!pedidoActualId) {
+    alert('Todavía no agregaste nada al carrito.')
     return
   }
 
   const items = Object.entries(carrito).map(([producto_id, cantidad]) => {
     const p = productos.find(p => p.id === producto_id)
     return {
-      pedido_id: nuevoPedidoId,
+      pedido_id: pedidoActualId,
       producto_id,
       cantidad,
       precio_unitario: p.precio,
@@ -255,11 +267,25 @@ async function crearPedido(metodo) {
 
   const { error: errorItems } = await supabase.from('pedido_items').insert(items)
   if (errorItems) {
-    alert('El pedido se creó pero hubo un problema con los productos. Avisá en el mostrador.')
+    alert('Hubo un problema al cargar los productos. Probá de nuevo.')
     console.error(errorItems)
+    return
   }
 
-  pedidoActualId = nuevoPedidoId
+  // Esta función calcula el total posta en el servidor (sumando los items
+  // recién insertados) y recién ahí cambia el estado del pedido -- el
+  // cliente nunca decide su propio monto ni su propio estado "pagado".
+  const { data: total, error: errorConfirmar } = await supabase.rpc('confirmar_metodo_pago', {
+    p_pedido_id: pedidoActualId,
+    p_metodo: metodo
+  })
+
+  if (errorConfirmar) {
+    alert('No se pudo confirmar el pedido. Probá de nuevo.')
+    console.error(errorConfirmar)
+    return
+  }
+
   mostrarEspera(metodo, total)
   carrito = {}
   renderProductos()
@@ -267,8 +293,7 @@ async function crearPedido(metodo) {
 }
 
 function mostrarEspera(metodo, total) {
-  document.getElementById('espera-numero-pedido').textContent =
-    'Pedido #' + pedidoActualId.slice(0, 8)
+  document.getElementById('espera-numero-pedido').textContent = 'Pedido #' + pedidoNumeroCorto
   document.getElementById('espera-monto').textContent = formatoMoneda(total)
   document.getElementById('espera-instrucciones').textContent =
     metodo === 'efectivo'
@@ -307,6 +332,8 @@ function iniciarPolling() {
 
 document.getElementById('btn-nuevo-pedido').addEventListener('click', () => {
   pedidoActualId = null
+  pedidoNumeroCorto = null
+  elBadgePedido.classList.add('oculto')
   mostrar(null)
 })
 
