@@ -57,9 +57,8 @@ function mostrar(vista) {
 // --- Cargar catálogo ---
 async function cargarProductos() {
   const { data, error } = await supabase
-    .from('productos')
+    .from('catalogo_disponible')
     .select('*')
-    .eq('disponible', true)
     .order('nombre')
 
   if (error) {
