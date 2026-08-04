@@ -9,7 +9,7 @@
 <body>
 
 <header class="topbar">
-  <a href="admin.html" class="btn-volver" aria-label="Volver al panel">←</a>
+  <a href="admin.html" class="btn-volver">‹</a>
   <span class="brand-sub">compras y mermas</span>
 </header>
 
@@ -18,9 +18,10 @@
   <div class="tabs">
     <button class="tab activa" data-tab="compra">Compra</button>
     <button class="tab" data-tab="merma">Merma</button>
+    <button class="tab" data-tab="deposito">Depósito</button>
   </div>
 
-  <section id="panel-compra" class="tab-panel">
+  <div id="panel-compra" class="tab-panel">
     <form id="form-compra" class="form-carga">
       <label>Producto
         <select id="compra-producto" required></select>
@@ -44,22 +45,39 @@
         <input type="number" id="compra-margen" min="0" step="1" placeholder="ej: 30">
       </label>
 
+      <label>Estado del producto al llegar
+        <div class="grupo-opciones" id="grupo-madurez">
+          <button type="button" class="opcion-btn activa" data-valor="0">Recién llega</button>
+          <button type="button" class="opcion-btn" data-valor="50">A mitad</button>
+          <button type="button" class="opcion-btn" data-valor="90">Para vender ya</button>
+        </div>
+      </label>
+
+      <div class="switch-fila">
+        <span class="switch-etiqueta">Depósito</span>
+        <label class="switch">
+          <input type="checkbox" id="compra-ubicacion" checked>
+          <span class="switch-slider"></span>
+        </label>
+        <span class="switch-etiqueta">Salón</span>
+      </div>
+
       <button type="submit" class="btn-primario">Registrar compra</button>
       <p id="compra-error" class="error oculto"></p>
     </form>
 
     <div id="compra-sugerencia" class="sugerencia-precio oculto">
       <p class="sugerencia-linea">Costo unitario: <strong id="sug-costo"></strong></p>
-      <p class="sugerencia-linea">Precio sugerido: <strong id="sug-precio"></strong></p>
-      <p class="muted sugerencia-linea">Precio actual: <span id="sug-precio-actual"></span></p>
+      <p class="sugerencia-linea">Precio sugerido para este lote: <strong id="sug-precio"></strong></p>
+      <p class="muted sugerencia-linea">Precio con el que quedó cargado: <span id="sug-precio-actual"></span></p>
       <div class="acciones-pedido">
         <button id="btn-usar-sugerido" class="btn-confirmar">Usar este precio</button>
         <button id="btn-mantener-precio" class="btn-cancelar">Mantener actual</button>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section id="panel-merma" class="tab-panel oculto">
+  <div id="panel-merma" class="tab-panel oculto">
     <form id="form-merma" class="form-carga">
       <label>Producto
         <select id="merma-producto" required></select>
@@ -78,7 +96,11 @@
       <button type="submit" class="btn-primario">Registrar merma</button>
       <p id="merma-error" class="error oculto"></p>
     </form>
-  </section>
+  </div>
+
+  <div id="panel-deposito" class="tab-panel oculto">
+    <div id="lista-deposito"><p class="muted">Cargando…</p></div>
+  </div>
 
 </main>
 
