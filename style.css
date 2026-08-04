@@ -445,3 +445,55 @@ body {
   font-weight: 600;
   font-size: 13px;
 }
+
+/* --- Compras y mermas --- */
+
+.subtitulo {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  margin: 20px 0 10px;
+}
+
+.form-carga {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-carga label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.form-carga input,
+.form-carga select {
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--blanco);
+  color: var(--texto);
+}
+
+.fila-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sugerencia-precio {
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: -4px;
+  margin-bottom: 20px;
+}
+
+.sugerencia-linea { margin: 0 0 4px; font-size: 14px; }
+.sugerencia-linea:last-of-type { margin-bottom: 12px; }
