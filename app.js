@@ -281,7 +281,10 @@ async function confirmarPedido(metodo) {
   })
 
   if (errorConfirmar) {
-    alert('No se pudo confirmar el pedido. Probá de nuevo.')
+    const mensaje = errorConfirmar.message?.includes('stock')
+      ? 'Uno de los productos ya no tiene stock suficiente. Ajustá la cantidad y probá de nuevo.'
+      : 'No se pudo confirmar el pedido. Probá de nuevo.'
+    alert(mensaje)
     console.error(errorConfirmar)
     return
   }
