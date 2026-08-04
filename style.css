@@ -497,3 +497,42 @@ body {
 
 .sugerencia-linea { margin: 0 0 4px; font-size: 14px; }
 .sugerencia-linea:last-of-type { margin-bottom: 12px; }
+
+/* --- Página de compras y mermas: volver + pestañas --- */
+
+.btn-volver {
+  text-decoration: none;
+  color: var(--verde-oscuro);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--blanco);
+  color: var(--texto-suave);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.tab.activa {
+  background: var(--verde);
+  color: white;
+  border-color: var(--verde);
+}
+
+.btn-enlace {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
