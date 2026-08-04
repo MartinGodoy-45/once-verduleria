@@ -39,65 +39,7 @@
   </section>
 
   <section class="bloque">
-    <h2>Compras y mermas</h2>
-
-    <h3 class="subtitulo">Cargar compra</h3>
-    <form id="form-compra" class="form-carga">
-      <label>Producto
-        <select id="compra-producto" required></select>
-      </label>
-      <p id="compra-stock-actual" class="muted oculto"></p>
-
-      <div class="fila-2">
-        <label>Cantidad
-          <input type="number" id="compra-cantidad" min="0.01" step="0.01" inputmode="decimal" required>
-        </label>
-        <label>Costo total
-          <input type="number" id="compra-costo" min="0" step="1" inputmode="decimal" required>
-        </label>
-      </div>
-
-      <label>Proveedor <span class="muted">(opcional)</span>
-        <input type="text" id="compra-proveedor">
-      </label>
-
-      <label>Margen objetivo %
-        <input type="number" id="compra-margen" min="0" step="1" placeholder="ej: 30">
-      </label>
-
-      <button type="submit" class="btn-primario">Registrar compra</button>
-      <p id="compra-error" class="error oculto"></p>
-    </form>
-
-    <div id="compra-sugerencia" class="sugerencia-precio oculto">
-      <p class="sugerencia-linea">Costo unitario: <strong id="sug-costo"></strong></p>
-      <p class="sugerencia-linea">Precio sugerido: <strong id="sug-precio"></strong></p>
-      <p class="muted sugerencia-linea">Precio actual: <span id="sug-precio-actual"></span></p>
-      <div class="acciones-pedido">
-        <button id="btn-usar-sugerido" class="btn-confirmar">Usar este precio</button>
-        <button id="btn-mantener-precio" class="btn-cancelar">Mantener actual</button>
-      </div>
-    </div>
-
-    <h3 class="subtitulo">Registrar merma</h3>
-    <form id="form-merma" class="form-carga">
-      <label>Producto
-        <select id="merma-producto" required></select>
-      </label>
-      <label>Cantidad
-        <input type="number" id="merma-cantidad" min="0.01" step="0.01" inputmode="decimal" required>
-      </label>
-      <label>Motivo
-        <select id="merma-motivo">
-          <option value="perecido">Perecido</option>
-          <option value="vencido">Vencido</option>
-          <option value="roto">Roto / dañado</option>
-          <option value="otro">Otro</option>
-        </select>
-      </label>
-      <button type="submit" class="btn-primario">Registrar merma</button>
-      <p id="merma-error" class="error oculto"></p>
-    </form>
+    <a href="compras.html" class="btn-primario btn-enlace">Cargar compras y mermas</a>
   </section>
 
   <button id="btn-salir" class="btn-texto">Cerrar sesión</button>
