@@ -2,18 +2,25 @@
 
 PWA de autoservicio para la verdulería dentro del minimarket "once" (barrio Alunai, La Rioja).
 
-## Qué hace esta primera versión
+## Cómo funciona ahora
 
-- Muestra el catálogo real desde Supabase (tabla `productos`, solo lo que está `disponible = true`)
-- Carrito en memoria (se pierde si recargás la página — es lo esperado en esta etapa)
-- Al pagar, crea el pedido y sus items en Supabase (`pedidos` + `pedido_items`)
-- Métodos de pago: efectivo y transferencia (quedan en estado `pendiente_*` hasta confirmación manual)
-- Pantalla de espera que consulta el estado del pedido cada 3 segundos (polling, no Realtime)
-- Instalable como app (manifest + service worker) — el shell queda en caché, los datos de Supabase nunca se cachean
+- Catálogo de cliente (`index.html` / `app.js`): lee la vista `catalogo_disponible` de Supabase, que muestra cada producto con el precio del **lote más urgente que esté en salón**. Si un producto no tiene ningún lote activo en salón, no aparece — el stock y el precio ya no viven en `productos`, viven en `lotes`.
+- Carrito en memoria (se pierde si recargás la página — es lo esperado en esta etapa).
+- Al pagar, crea el pedido y sus items en Supabase (`pedidos` + `pedido_items`), y la confirmación de pago descuenta stock del lote más urgente en salón (falla con error claro si no alcanza).
+- Métodos de pago: efectivo y transferencia (quedan en estado `pendiente_*` hasta confirmación manual).
+- Panel de admin (`admin.html`): login, pedidos pendientes de confirmar, resumen del día, y un botón a `compras.html`.
+- Compras y mermas (`compras.html`): cada compra crea un **lote** nuevo con fecha, estado de madurez al llegar (Recién llega / A mitad / Para vender ya) y ubicación (switch Depósito / Salón). Si el producto tiene un % de margen configurado, sugiere un precio para ese lote que confirmás con un toque. Los lotes en depósito se pasan a salón con un toque desde la pestaña "Depósito".
+- Instalable como app (manifest + service worker) — el service worker está **desactivado a propósito** (`SERVICE_WORKER_ACTIVO = false` en `app.js`) mientras seguimos iterando seguido; si algo se ve desactualizado en el celular, hay que borrar los datos del sitio desde el navegador, no alcanza con refrescar.
+
+## Base de datos (Supabase, proyecto "once")
+
+Tablas: `productos`, `compras`, `mermas`, `lotes`, `pedidos`, `pedido_items`.
+Vista pública: `catalogo_disponible` (precio/stock por lote más urgente).
+Funciones (RPC): `crear_pedido`, `confirmar_metodo_pago`, `obtener_estado_pedido`, `obtener_items_pedido`, `registrar_compra`, `registrar_merma`.
 
 ## Cómo probarla ahora mismo, sin instalar nada
 
-Es HTML/CSS/JS puro, sin build. Podés abrirla con cualquier servidor estático simple:
+Es HTML/CSS/JS puro, sin build.
 
 ```bash
 cd once-verduleria
@@ -22,22 +29,14 @@ python3 -m http.server 8000
 
 Y entrar a `http://localhost:8000` desde el navegador.
 
-## Cómo seguir en Claude Code
+## Qué falta
 
-1. Instalá Claude Code (`npm install -g @anthropic-ai/claude-code` o desde claude.com/code)
-2. Descomprimí este proyecto en una carpeta, o subilo a un repo de GitHub y cloná
-3. Corré `claude` adentro de la carpeta del proyecto
-4. Contale a Claude Code en qué quedamos (podés pegarle este README) y seguí desde ahí — el panel de admin para tu ex, el webhook de Mercado Pago, o lo que decidas primero
-
-## Qué falta (a propósito, para ir de lo simple a lo difícil)
-
-- [x] Panel de admin para tu ex (`admin.html`, login con Supabase Auth, pendientes de confirmar, ventas del día)
 - [ ] Integración real con Mercado Pago (QR dinámico + webhook)
 - [ ] Balanza conectada (Web Serial API) para productos por peso
-- [ ] Pantalla de carga rápida de compras/mermas
+- [ ] Lógica de "maduración → oferta" (día del lote → % de descuento sugerido), a definir en otro chat de estrategia comercial y traer acá para implementar
 - [ ] Reemplazar los íconos placeholder de `icons/` por unos de verdad
-- [ ] Deploy (GitHub Pages es la opción más simple, igual que en tus otros proyectos)
+- [ ] Decidir qué hacer con `productos.precio_oferta` / `productos.categoria` (columnas ya creadas, sin usar todavía)
 
 ## Credenciales
 
-`app.js` ya tiene el Project URL y la anon key del proyecto **once** de Supabase — son públicas por diseño, no hace falta esconderlas. La `service_role key` (la que sí es secreta) no está en ningún lado de este proyecto: solo va a usarse del lado del servidor cuando armemos el webhook de Mercado Pago.
+`app.js`, `admin.js` y `compras.js` ya tienen el Project URL y la anon key del proyecto **once** de Supabase — son públicas por diseño, no hace falta esconderlas. La `service_role key` (la que sí es secreta) no está en ningún lado de este proyecto: solo va a usarse del lado del servidor cuando armemos el webhook de Mercado Pago.
