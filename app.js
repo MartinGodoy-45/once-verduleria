@@ -104,6 +104,7 @@ function renderProductos() {
     }
 
     const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
+    const descuentoPct = esOferta ? Math.round((1 - p.precio / p.precio_original) * 100) : 0
 
     card.innerHTML = `
       <div class="foto-wrap">
@@ -112,11 +113,15 @@ function renderProductos() {
           : `<div class="foto-producto foto-vacia${esPeso ? ' foto-pesable' : ''}${cantidad > 0 ? ' en-carrito' : ''}" data-id="${p.id}"></div>`
         }
         ${cantidad > 0 ? '<span class="badge-check">✓</span>' : ''}
+        ${esOferta ? `<span class="cinta-oferta">-${descuentoPct}%</span>` : ''}
       </div>
       <span class="nombre">${p.nombre}</span>
-      <span class="precio">${formatoMoneda(p.precio)}${unidad}</span>
+      ${esOferta
+        ? `<span class="precio-oferta-fila"><span class="precio-tachado">${formatoMoneda(p.precio_original)}</span> <span class="precio-oferta">${formatoMoneda(p.precio)}${unidad}</span></span>`
+        : `<span class="precio">${formatoMoneda(p.precio)}${unidad}</span>`
+      }
       ${controles}
-      ${esOferta ? `<p class="cartel-oferta">Antes ${formatoMoneda(p.precio_original)} · Ahora ${formatoMoneda(p.precio)}${unidad}</p>` : ''}
+      ${esOferta && esPeso ? `<p class="ejemplo-oferta">Llevando 2kg: ${formatoMoneda(p.precio * 2)}</p>` : ''}
     `
     elLista.appendChild(card)
   })
@@ -176,7 +181,7 @@ function abrirPesaje(id) {
   elPesajeNombre.textContent = p.nombre
   const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
   elPesajePrecioKg.innerHTML = esOferta
-    ? `<span class="precio-tachado">${formatoMoneda(p.precio_original)}</span> ${formatoMoneda(p.precio)}/kg`
+    ? `<span class="precio-tachado">${formatoMoneda(p.precio_original)}</span> <span class="precio-oferta">${formatoMoneda(p.precio)}/kg</span>`
     : `${formatoMoneda(p.precio)}/kg`
   elPesajeInput.value = carrito[id] || ''
   actualizarSubtotalPesaje()
