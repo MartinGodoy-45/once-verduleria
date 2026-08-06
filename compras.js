@@ -185,23 +185,31 @@ document.getElementById('form-compra').addEventListener('submit', async (e) => {
     .single()
 
   document.getElementById('sug-precio-actual').textContent = formatoMoneda(loteNuevo?.precio ?? 0)
+  document.getElementById('sug-precio-manual').value = loteNuevo?.precio ?? ''
+  elCompraSugerencia.dataset.loteId = resultado.lote_id
 
   if (resultado.precio_sugerido == null) {
-    // No hay margen objetivo configurado para este producto: no hay nada para sugerir,
-    // el lote ya quedó con el precio que tenía el producto.
+    // No hay margen objetivo configurado: no hay sugerencia para mostrar,
+    // pero igual dejamos el campo abierto por si quiere poner un precio a mano.
+    document.getElementById('sug-costo').textContent = formatoMoneda(resultado.costo_unitario)
+    document.getElementById('sug-precio').textContent = '(sin margen configurado)'
+    elCompraSugerencia.classList.remove('oculto')
     return
   }
 
   document.getElementById('sug-costo').textContent = formatoMoneda(resultado.costo_unitario)
   document.getElementById('sug-precio').textContent = formatoMoneda(resultado.precio_sugerido)
   elCompraSugerencia.classList.remove('oculto')
-  elCompraSugerencia.dataset.loteId = resultado.lote_id
-  elCompraSugerencia.dataset.precioSugerido = resultado.precio_sugerido
 })
 
 document.getElementById('btn-usar-sugerido').addEventListener('click', async () => {
   const loteId = elCompraSugerencia.dataset.loteId
-  const precio = Number(elCompraSugerencia.dataset.precioSugerido)
+  const precio = Number(document.getElementById('sug-precio-manual').value)
+
+  if (!precio || precio <= 0) {
+    alert('Poné un precio válido.')
+    return
+  }
 
   const { error } = await supabase
     .from('lotes')
