@@ -622,17 +622,25 @@ body {
 
 .tab-panel { margin-top: 4px; }
 
-/* --- Cartel de oferta (precio original vs. actual) --- */
+/* --- Oferta: cinta con %, precio tachado, ejemplo de 2kg --- */
 
-.cartel-oferta {
-  margin: 4px 0 0;
-  padding: 4px 8px;
-  background: #FFF3C4;
-  color: #7A5A00;
+.cinta-oferta {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: var(--tomate);
+  color: white;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
+  padding: 3px 7px;
   border-radius: 6px;
-  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.precio-oferta-fila {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .precio-tachado {
@@ -640,4 +648,16 @@ body {
   color: var(--texto-suave);
   font-weight: 400;
   font-size: 0.85em;
+}
+
+.precio-oferta {
+  color: var(--tomate);
+  font-weight: 800;
+}
+
+.ejemplo-oferta {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--verde-oscuro);
 }
