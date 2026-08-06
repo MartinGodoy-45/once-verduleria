@@ -476,3 +476,11 @@ elListaMaduracion.addEventListener('click', async (e) => {
     btnBaja.closest('.fila-pendiente-wrap').remove()
   }
 })
+
+// Mismo motivo que en admin.js: sacar cualquier Service Worker viejo que haya
+// quedado registrado, para que esta página no quede pegada en una copia vieja.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister())
+  })
+}
