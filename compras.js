@@ -116,6 +116,66 @@ async function actualizarInfoProductoCompra() {
 
 selectCompraProducto.addEventListener('change', actualizarInfoProductoCompra)
 
+// --- Alta de producto nuevo, sin salir de esta pantalla ---
+const elFormNuevoProducto = document.getElementById('form-nuevo-producto')
+const elNuevoProductoError = document.getElementById('nuevo-producto-error')
+
+document.getElementById('btn-mostrar-nuevo-producto').addEventListener('click', () => {
+  elFormNuevoProducto.classList.remove('oculto')
+})
+
+document.getElementById('btn-cancelar-nuevo-producto').addEventListener('click', () => {
+  elFormNuevoProducto.classList.add('oculto')
+  elNuevoProductoError.classList.add('oculto')
+  document.getElementById('nuevo-producto-nombre').value = ''
+  document.getElementById('nuevo-producto-precio').value = ''
+  document.getElementById('nuevo-producto-tipo').checked = false
+})
+
+document.getElementById('btn-crear-producto').addEventListener('click', async () => {
+  elNuevoProductoError.classList.add('oculto')
+
+  const nombre = document.getElementById('nuevo-producto-nombre').value.trim()
+  const precio = Number(document.getElementById('nuevo-producto-precio').value)
+  const tipo = document.getElementById('nuevo-producto-tipo').checked ? 'unidad' : 'peso'
+
+  if (!nombre) {
+    elNuevoProductoError.textContent = 'Ponele un nombre al producto.'
+    elNuevoProductoError.classList.remove('oculto')
+    return
+  }
+  if (!precio || precio <= 0) {
+    elNuevoProductoError.textContent = 'Ponele un precio inicial mayor a cero.'
+    elNuevoProductoError.classList.remove('oculto')
+    return
+  }
+
+  const boton = document.getElementById('btn-crear-producto')
+  boton.disabled = true
+
+  const { data, error } = await supabase
+    .from('productos')
+    .insert({ nombre, tipo, precio, disponible: true })
+    .select('id')
+    .single()
+
+  boton.disabled = false
+
+  if (error) {
+    elNuevoProductoError.textContent = error.message.includes('duplicate')
+      ? 'Ya existe un producto con ese nombre.'
+      : 'No se pudo crear el producto. Probá de nuevo.'
+    elNuevoProductoError.classList.remove('oculto')
+    console.error(error)
+    return
+  }
+
+  await cargarProductosParaCompraYMerma()
+  selectCompraProducto.value = data.id
+  actualizarInfoProductoCompra()
+  document.getElementById('btn-cancelar-nuevo-producto').click()
+})
+
 // El margen se guarda al toque, apenas lo cambian.
 elCompraMargen.addEventListener('change', async () => {
   const p = productoSeleccionado(selectCompraProducto.value)
