@@ -679,3 +679,19 @@ body {
   margin-top: 4px;
   box-sizing: border-box;
 }
+
+.btn-enlace-chico {
+  align-self: flex-start;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  margin: -6px 0 4px;
+}
+
+#form-nuevo-producto {
+  background: var(--crema);
+  border: 1px dashed var(--borde);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 4px;
+}
