@@ -29,7 +29,9 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('panel-compra').classList.toggle('oculto', btn.dataset.tab !== 'compra')
     document.getElementById('panel-merma').classList.toggle('oculto', btn.dataset.tab !== 'merma')
     document.getElementById('panel-deposito').classList.toggle('oculto', btn.dataset.tab !== 'deposito')
+    document.getElementById('panel-maduracion').classList.toggle('oculto', btn.dataset.tab !== 'maduracion')
     if (btn.dataset.tab === 'deposito') cargarDeposito()
+    if (btn.dataset.tab === 'maduracion') cargarMaduracion()
   })
 })
 
@@ -307,4 +309,102 @@ elListaDeposito.addEventListener('click', async (e) => {
     return
   }
   cargarDeposito()
+})
+
+// --- Maduración: sugerencias de descuento u retiro por lote ---
+const elListaMaduracion = document.getElementById('lista-maduracion')
+
+async function cargarMaduracion() {
+  elListaMaduracion.innerHTML = '<p class="muted">Cargando…</p>'
+
+  const { data, error } = await supabase
+    .from('sugerencias_maduracion')
+    .select('*')
+    .order('dias_efectivos', { ascending: false })
+
+  if (error) {
+    console.error(error)
+    elListaMaduracion.innerHTML = '<p class="muted">No se pudieron cargar las sugerencias.</p>'
+    return
+  }
+
+  if (data.length === 0) {
+    elListaMaduracion.innerHTML = '<p class="muted">Ningún lote necesita atención hoy.</p>'
+    return
+  }
+
+  elListaMaduracion.innerHTML = ''
+  data.forEach(s => {
+    const fila = document.createElement('div')
+    fila.className = 'fila-pendiente-wrap'
+
+    if (s.retirar) {
+      fila.innerHTML = `
+        <div class="detalle-pedido">
+          <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
+          <p class="muted">Este lote ya pasó su punto de venta. Conviene darlo de baja.</p>
+          <div class="acciones-pedido">
+            <button class="btn-cancelar btn-dar-de-baja" data-producto-id="${s.producto_id}" data-cantidad="${s.cantidad_restante}">Registrar como merma</button>
+          </div>
+        </div>
+      `
+    } else {
+      fila.innerHTML = `
+        <div class="detalle-pedido">
+          <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
+          <p class="muted">Precio actual ${formatoMoneda(s.precio_actual)} → sugerido ${formatoMoneda(s.precio_sugerido)} (-${s.descuento_pct}%)</p>
+          <div class="acciones-pedido">
+            <button class="btn-confirmar btn-aplicar-maduracion" data-lote-id="${s.lote_id}" data-precio="${s.precio_sugerido}">Usar este precio</button>
+            <button class="btn-cancelar btn-ignorar-maduracion">Ignorar</button>
+          </div>
+        </div>
+      `
+    }
+    elListaMaduracion.appendChild(fila)
+  })
+}
+
+elListaMaduracion.addEventListener('click', async (e) => {
+  const btnIgnorar = e.target.closest('.btn-ignorar-maduracion')
+  if (btnIgnorar) {
+    btnIgnorar.closest('.fila-pendiente-wrap').remove()
+    return
+  }
+
+  const btnAplicar = e.target.closest('.btn-aplicar-maduracion')
+  if (btnAplicar) {
+    btnAplicar.disabled = true
+    const { error } = await supabase
+      .from('lotes')
+      .update({ precio: Number(btnAplicar.dataset.precio) })
+      .eq('id', btnAplicar.dataset.loteId)
+
+    if (error) {
+      alert('No se pudo actualizar el precio del lote. Probá de nuevo.')
+      console.error(error)
+      btnAplicar.disabled = false
+      return
+    }
+    btnAplicar.closest('.fila-pendiente-wrap').remove()
+    return
+  }
+
+  const btnBaja = e.target.closest('.btn-dar-de-baja')
+  if (btnBaja) {
+    if (!confirm('¿Registrar todo lo que queda de este lote como merma?')) return
+    btnBaja.disabled = true
+    const { error } = await supabase.rpc('registrar_merma', {
+      p_producto_id: btnBaja.dataset.productoId,
+      p_cantidad: Number(btnBaja.dataset.cantidad),
+      p_motivo: 'vencido'
+    })
+
+    if (error) {
+      alert('No se pudo registrar la merma. Probá de nuevo.')
+      console.error(error)
+      btnBaja.disabled = false
+      return
+    }
+    btnBaja.closest('.fila-pendiente-wrap').remove()
+  }
 })
