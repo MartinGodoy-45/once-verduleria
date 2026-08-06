@@ -27,6 +27,29 @@
       <label>Producto
         <select id="compra-producto" required></select>
       </label>
+      <button type="button" id="btn-mostrar-nuevo-producto" class="btn-texto btn-enlace-chico">+ Nuevo producto</button>
+
+      <div id="form-nuevo-producto" class="form-carga oculto">
+        <label>Nombre
+          <input type="text" id="nuevo-producto-nombre" placeholder="ej: Naranja de ombligo">
+        </label>
+        <div class="switch-fila">
+          <span class="switch-etiqueta">Por peso (kg)</span>
+          <label class="switch">
+            <input type="checkbox" id="nuevo-producto-tipo">
+          </label>
+          <span class="switch-etiqueta">Por unidad</span>
+        </div>
+        <label>Precio inicial <span class="muted">(lo vas a poder ajustar en la compra)</span>
+          <input type="number" id="nuevo-producto-precio" min="0" step="1">
+        </label>
+        <div class="acciones-pedido">
+          <button type="button" id="btn-crear-producto" class="btn-confirmar">Crear producto</button>
+          <button type="button" id="btn-cancelar-nuevo-producto" class="btn-cancelar">Cancelar</button>
+        </div>
+        <p id="nuevo-producto-error" class="error oculto"></p>
+      </div>
+
       <p id="compra-stock-actual" class="muted oculto"></p>
 
       <div class="fila-2">
