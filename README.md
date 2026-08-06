@@ -32,7 +32,12 @@ Y entrar a `http://localhost:8000` desde el navegador.
 ## Qué falta
 
 - [ ] Integración real con Mercado Pago (QR dinámico + webhook)
-- [ ] Balanza conectada (Web Serial API) para productos por peso
+- [ ] Balanza conectada (Web Serial API) para productos por peso — diseño acordado, pendiente de hardware real para construir y probar:
+  - Cada puesto = una PC/tablet con su balanza enchufada (Web Serial solo lee el puerto físico de esa misma máquina, ningún celular se conecta directo a una balanza ajena).
+  - Cada balanza tiene un QR fijo pegado ("Balanza 1", "Balanza 2", ...). El cliente ya tiene la PWA abierta (entró por un QR general suelto en el salón/mostrador) y al escanear el de una balanza puntual, su celular se pone a "escuchar" el peso que esa balanza publica en vivo.
+  - La misma PC de cada puesto también sirve como terminal de compra directa, para quien prefiera no usar su propio teléfono (personas mayores, niños, etc.) — mismo software, sin escanear nada.
+  - Para que una balanza no le muestre su peso a dos personas a la vez (alguien en su celu + alguien comprando directo en la PC), cada balanza tiene un solo modo activo por vez: "compartida" (publica para celulares, default) o "compra directa" (alguien la está usando en la PC misma; quien escanee el QR en ese momento ve un aviso de "en uso", no un peso). Cambia de modo solo, sin arbitraje raro.
+  - El protocolo exacto para leer cada balanza depende de la marca — no se puede definir sin tenerla en mano.
 - [ ] Lógica de "maduración → oferta" (día del lote → % de descuento sugerido), a definir en otro chat de estrategia comercial y traer acá para implementar
 - [ ] Reemplazar los íconos placeholder de `icons/` por unos de verdad
 - [ ] Decidir qué hacer con `productos.precio_oferta` / `productos.categoria` (columnas ya creadas, sin usar todavía)
