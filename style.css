@@ -621,3 +621,23 @@ body {
 }
 
 .tab-panel { margin-top: 4px; }
+
+/* --- Cartel de oferta (precio original vs. actual) --- */
+
+.cartel-oferta {
+  margin: 4px 0 0;
+  padding: 4px 8px;
+  background: #FFF3C4;
+  color: #7A5A00;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.precio-tachado {
+  text-decoration: line-through;
+  color: var(--texto-suave);
+  font-weight: 400;
+  font-size: 0.85em;
+}
