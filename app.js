@@ -103,6 +103,8 @@ function renderProductos() {
         </div>`
     }
 
+    const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
+
     card.innerHTML = `
       <div class="foto-wrap">
         ${p.foto_url
@@ -114,6 +116,7 @@ function renderProductos() {
       <span class="nombre">${p.nombre}</span>
       <span class="precio">${formatoMoneda(p.precio)}${unidad}</span>
       ${controles}
+      ${esOferta ? `<p class="cartel-oferta">Antes ${formatoMoneda(p.precio_original)} · Ahora ${formatoMoneda(p.precio)}${unidad}</p>` : ''}
     `
     elLista.appendChild(card)
   })
@@ -171,7 +174,10 @@ function abrirPesaje(id) {
   if (!p) return
   pesajeProductoId = id
   elPesajeNombre.textContent = p.nombre
-  elPesajePrecioKg.textContent = `${formatoMoneda(p.precio)}/kg`
+  const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
+  elPesajePrecioKg.innerHTML = esOferta
+    ? `<span class="precio-tachado">${formatoMoneda(p.precio_original)}</span> ${formatoMoneda(p.precio)}/kg`
+    : `${formatoMoneda(p.precio)}/kg`
   elPesajeInput.value = carrito[id] || ''
   actualizarSubtotalPesaje()
   mostrar(vistaPesaje)
