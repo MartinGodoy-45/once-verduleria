@@ -71,9 +71,12 @@
       <p class="sugerencia-linea">Costo unitario: <strong id="sug-costo"></strong></p>
       <p class="sugerencia-linea">Precio sugerido para este lote: <strong id="sug-precio"></strong></p>
       <p class="muted sugerencia-linea">Precio con el que quedó cargado: <span id="sug-precio-actual"></span></p>
+      <label>O poné el precio que quieras para este lote
+        <input type="number" id="sug-precio-manual" min="0" step="1">
+      </label>
       <div class="acciones-pedido">
-        <button id="btn-usar-sugerido" class="btn-confirmar">Usar este precio</button>
-        <button id="btn-mantener-precio" class="btn-cancelar">Mantener actual</button>
+        <button id="btn-usar-sugerido" class="btn-confirmar">Guardar este precio</button>
+        <button id="btn-mantener-precio" class="btn-cancelar">Cerrar</button>
       </div>
     </div>
   </div>
