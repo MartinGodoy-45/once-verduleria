@@ -49,6 +49,17 @@ function formatoMoneda(n) {
   return '$' + Math.round(n).toLocaleString('es-AR')
 }
 
+// Umbral de "compra por volumen": si hay oferta activa en el lote (precio_original
+// distinto del precio actual) y la cantidad pesada llega a este número de kg,
+// se cobra el precio con descuento para TODO el peso. Por debajo, precio normal.
+const UMBRAL_KG_OFERTA = 2
+
+function precioPorCantidad(p, cantidad) {
+  const tieneOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
+  if (tieneOferta && cantidad >= UMBRAL_KG_OFERTA) return Number(p.precio)
+  return Number(tieneOferta ? p.precio_original : p.precio)
+}
+
 function mostrar(vista) {
   ;[vistaCarrito, vistaPago, vistaEspera, document.getElementById('vista-pesaje')].forEach(v => v.classList.add('oculto'))
   if (vista) vista.classList.remove('oculto')
@@ -105,6 +116,7 @@ function renderProductos() {
 
     const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
     const descuentoPct = esOferta ? Math.round((1 - p.precio / p.precio_original) * 100) : 0
+    const precioMostrado = esOferta ? p.precio_original : p.precio
 
     card.innerHTML = `
       <div class="foto-wrap">
@@ -116,7 +128,7 @@ function renderProductos() {
         ${esOferta ? `<span class="cinta-oferta">-${descuentoPct}%</span>` : ''}
       </div>
       <span class="nombre">${p.nombre}</span>
-      <span class="precio">${formatoMoneda(p.precio)}${unidad}</span>
+      <span class="precio">${formatoMoneda(precioMostrado)}${unidad}</span>
       ${controles}
       ${esOferta && esPeso ? `<p class="ejemplo-oferta">Llevando 2kg: ${formatoMoneda(p.precio * 2)}</p>` : ''}
     `
@@ -176,7 +188,6 @@ function abrirPesaje(id) {
   if (!p) return
   pesajeProductoId = id
   elPesajeNombre.textContent = p.nombre
-  elPesajePrecioKg.textContent = `${formatoMoneda(p.precio)}/kg`
   elPesajeInput.value = carrito[id] || ''
   actualizarSubtotalPesaje()
   mostrar(vistaPesaje)
@@ -187,7 +198,10 @@ function abrirPesaje(id) {
 function actualizarSubtotalPesaje() {
   const p = productos.find(p => p.id === pesajeProductoId)
   const kg = parseFloat(elPesajeInput.value) || 0
-  elPesajeSubtotal.textContent = formatoMoneda(kg * (p ? p.precio : 0))
+  if (p) {
+    elPesajePrecioKg.textContent = `${formatoMoneda(precioPorCantidad(p, kg))}/kg`
+  }
+  elPesajeSubtotal.textContent = formatoMoneda(kg * (p ? precioPorCantidad(p, kg) : 0))
 }
 
 elPesajeInput.addEventListener('input', actualizarSubtotalPesaje)
@@ -210,7 +224,7 @@ document.getElementById('btn-agregar-pesaje').addEventListener('click', async ()
 function totalCarrito() {
   return Object.entries(carrito).reduce((acc, [id, cant]) => {
     const p = productos.find(p => p.id === id)
-    return acc + (p ? p.precio * cant : 0)
+    return acc + (p ? precioPorCantidad(p, cant) * cant : 0)
   }, 0)
 }
 
@@ -233,7 +247,7 @@ function renderCarrito() {
     const fila = document.createElement('div')
     fila.className = 'fila-carrito'
     const unidad = p.tipo === 'peso' ? 'kg' : ''
-    fila.innerHTML = `<span>${p.nombre} · ${cant}${unidad}</span><span>${formatoMoneda(p.precio * cant)}</span>`
+    fila.innerHTML = `<span>${p.nombre} · ${cant}${unidad}</span><span>${formatoMoneda(precioPorCantidad(p, cant) * cant)}</span>`
     elListaCarrito.appendChild(fila)
   })
   elCarritoTotal2.textContent = formatoMoneda(totalCarrito())
@@ -260,12 +274,13 @@ async function confirmarPedido(metodo) {
 
   const items = Object.entries(carrito).map(([producto_id, cantidad]) => {
     const p = productos.find(p => p.id === producto_id)
+    const precio = precioPorCantidad(p, cantidad)
     return {
       pedido_id: pedidoActualId,
       producto_id,
       cantidad,
-      precio_unitario: p.precio,
-      subtotal: p.precio * cantidad
+      precio_unitario: precio,
+      subtotal: precio * cantidad
     }
   })
 
