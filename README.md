@@ -41,7 +41,9 @@ Y entrar a `http://localhost:8000` desde el navegador.
 - [ ] Lógica de "maduración → oferta" (día del lote → % de descuento sugerido), a definir en otro chat de estrategia comercial y traer acá para implementar
 - [ ] Reemplazar los íconos placeholder de `icons/` por unos de verdad
 - [ ] Decidir qué hacer con `productos.precio_oferta` / `productos.categoria` (columnas ya creadas, sin usar todavía)
+- [ ] Umbral de kg para la oferta por volumen (hoy fijo en `UMBRAL_KG_OFERTA = 2` dentro de app.js, igual para todos los productos): en algún momento podría convenir que sea editable por producto desde la pantalla de compras, en vez de un número fijo en el código.
+- [ ] Ofertas combo entre productos distintos (ej: "2kg banana + 2kg naranja = $X"): hoy el sistema solo sabe hacer ofertas de un producto contra sí mismo (por cantidad o por maduración). Combos cruzados entre productos es una idea a futuro, sin diseñar todavía.
 
 ## Credenciales
 
-`app.js`, `admin.js` y `compras.js` ya tienen el Project URL y la anon key del proyecto **once** de Supabase — son públicas por diseño, no hace falta esconderlas. La `service_role key` (la que sí es secreta) no está en ningún lado de este proyecto: solo va a usarse del lado del servidor cuando armemos el webhook de Mercado Pago. 
+`app.js`, `admin.js` y `compras.js` ya tienen el Project URL y la anon key del proyecto **once** de Supabase — son públicas por diseño, no hace falta esconderlas. La `service_role key` (la que sí es secreta) no está en ningún lado de este proyecto: solo va a usarse del lado del servidor cuando armemos el webhook de Mercado Pago.
