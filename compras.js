@@ -30,8 +30,10 @@ document.querySelectorAll('.tab').forEach(btn => {
     document.getElementById('panel-merma').classList.toggle('oculto', btn.dataset.tab !== 'merma')
     document.getElementById('panel-deposito').classList.toggle('oculto', btn.dataset.tab !== 'deposito')
     document.getElementById('panel-maduracion').classList.toggle('oculto', btn.dataset.tab !== 'maduracion')
+    document.getElementById('panel-precio').classList.toggle('oculto', btn.dataset.tab !== 'precio')
     if (btn.dataset.tab === 'deposito') cargarDeposito()
     if (btn.dataset.tab === 'maduracion') cargarMaduracion()
+    if (btn.dataset.tab === 'precio') cargarLotesParaPrecio()
   })
 })
 
@@ -80,6 +82,7 @@ async function cargarProductosParaCompraYMerma() {
   const opciones = data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('')
   selectCompraProducto.innerHTML = opciones
   selectMermaProducto.innerHTML = opciones
+  document.getElementById('precio-producto').innerHTML = opciones
 
   actualizarInfoProductoCompra()
 }
@@ -431,6 +434,87 @@ async function cargarMaduracion() {
     elListaMaduracion.appendChild(fila)
   })
 }
+
+// --- Precio manual: editar el precio de cualquier lote activo, sin esperar
+// ni a la sugerencia de compra ni a la de maduración ---
+const selectPrecioProducto = document.getElementById('precio-producto')
+const elListaPrecioLotes = document.getElementById('lista-precio-lotes')
+
+selectPrecioProducto.addEventListener('change', cargarLotesParaPrecio)
+
+async function cargarLotesParaPrecio() {
+  const productoId = selectPrecioProducto.value
+  if (!productoId) return
+  elListaPrecioLotes.innerHTML = '<p class="muted">Cargando…</p>'
+
+  const producto = productoSeleccionado(productoId)
+
+  const { data, error } = await supabase
+    .from('lotes')
+    .select('id, cantidad_restante, ubicacion, precio, precio_original, fecha_ingreso')
+    .eq('producto_id', productoId)
+    .gt('cantidad_restante', 0)
+    .order('fecha_ingreso')
+
+  if (error) {
+    console.error(error)
+    elListaPrecioLotes.innerHTML = '<p class="muted">No se pudieron cargar los lotes.</p>'
+    return
+  }
+
+  if (data.length === 0) {
+    elListaPrecioLotes.innerHTML = '<p class="muted">Este producto no tiene ningún lote activo todavía.</p>'
+    return
+  }
+
+  const unidad = producto?.tipo === 'peso' ? 'kg' : 'unidades'
+  elListaPrecioLotes.innerHTML = ''
+  data.forEach(lote => {
+    const fila = document.createElement('div')
+    fila.className = 'fila-pendiente-wrap'
+    fila.innerHTML = `
+      <div class="detalle-pedido">
+        <div class="fila-titulo">${lote.cantidad_restante} ${unidad} · ${lote.ubicacion === 'salon' ? 'Salón' : 'Depósito'}</div>
+        <p class="muted">Precio original: ${formatoMoneda(lote.precio_original)}</p>
+        <label>Precio actual de este lote
+          <input type="number" min="0" step="1" class="input-precio-lote" value="${lote.precio}" data-lote-id="${lote.id}">
+        </label>
+        <div class="acciones-pedido">
+          <button class="btn-confirmar btn-guardar-precio-lote" data-lote-id="${lote.id}">Guardar</button>
+        </div>
+      </div>
+    `
+    elListaPrecioLotes.appendChild(fila)
+  })
+}
+
+elListaPrecioLotes.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-guardar-precio-lote')
+  if (!btn) return
+
+  const input = elListaPrecioLotes.querySelector(`.input-precio-lote[data-lote-id="${btn.dataset.loteId}"]`)
+  const precio = Number(input.value)
+  if (!precio || precio <= 0) {
+    alert('Poné un precio válido.')
+    return
+  }
+
+  btn.disabled = true
+  const { error } = await supabase
+    .from('lotes')
+    .update({ precio })
+    .eq('id', btn.dataset.loteId)
+
+  btn.disabled = false
+
+  if (error) {
+    alert('No se pudo guardar el precio. Probá de nuevo.')
+    console.error(error)
+    return
+  }
+  btn.textContent = 'Guardado ✓'
+  setTimeout(() => { btn.textContent = 'Guardar' }, 1500)
+})
 
 elListaMaduracion.addEventListener('click', async (e) => {
   const btnIgnorar = e.target.closest('.btn-ignorar-maduracion')
