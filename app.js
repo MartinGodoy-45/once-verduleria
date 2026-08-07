@@ -116,10 +116,7 @@ function renderProductos() {
         ${esOferta ? `<span class="cinta-oferta">-${descuentoPct}%</span>` : ''}
       </div>
       <span class="nombre">${p.nombre}</span>
-      ${esOferta
-        ? `<span class="precio-oferta-fila"><span class="precio-tachado">${formatoMoneda(p.precio_original)}</span> <span class="precio-oferta">${formatoMoneda(p.precio)}${unidad}</span></span>`
-        : `<span class="precio">${formatoMoneda(p.precio)}${unidad}</span>`
-      }
+      <span class="precio">${formatoMoneda(p.precio)}${unidad}</span>
       ${controles}
       ${esOferta && esPeso ? `<p class="ejemplo-oferta">Llevando 2kg: ${formatoMoneda(p.precio * 2)}</p>` : ''}
     `
@@ -179,10 +176,7 @@ function abrirPesaje(id) {
   if (!p) return
   pesajeProductoId = id
   elPesajeNombre.textContent = p.nombre
-  const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
-  elPesajePrecioKg.innerHTML = esOferta
-    ? `<span class="precio-tachado">${formatoMoneda(p.precio_original)}</span> <span class="precio-oferta">${formatoMoneda(p.precio)}/kg</span>`
-    : `${formatoMoneda(p.precio)}/kg`
+  elPesajePrecioKg.textContent = `${formatoMoneda(p.precio)}/kg`
   elPesajeInput.value = carrito[id] || ''
   actualizarSubtotalPesaje()
   mostrar(vistaPesaje)
