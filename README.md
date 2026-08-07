@@ -44,4 +44,4 @@ Y entrar a `http://localhost:8000` desde el navegador.
 
 ## Credenciales
 
-`app.js`, `admin.js` y `compras.js` ya tienen el Project URL y la anon key del proyecto **once** de Supabase — son públicas por diseño, no hace falta esconderlas. La `service_role key` (la que sí es secreta) no está en ningún lado de este proyecto: solo va a usarse del lado del servidor cuando armemos el webhook de Mercado Pago.
+`app.js`, `admin.js` y `compras.js` ya tienen el Project URL y la anon key del proyecto **once** de Supabase — son públicas por diseño, no hace falta esconderlas. La `service_role key` (la que sí es secreta) no está en ningún lado de este proyecto: solo va a usarse del lado del servidor cuando armemos el webhook de Mercado Pago. 
