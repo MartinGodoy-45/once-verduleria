@@ -622,7 +622,7 @@ body {
 
 .tab-panel { margin-top: 4px; }
 
-/* --- Oferta: cinta con %, precio tachado, ejemplo de 2kg --- */
+/* --- Oferta: cinta con % y ejemplo de 2kg (el precio se muestra normal) --- */
 
 .cinta-oferta {
   position: absolute;
@@ -635,24 +635,6 @@ body {
   padding: 3px 7px;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-}
-
-.precio-oferta-fila {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.precio-tachado {
-  text-decoration: line-through;
-  color: var(--texto-suave);
-  font-weight: 400;
-  font-size: 0.85em;
-}
-
-.precio-oferta {
-  color: var(--tomate);
-  font-weight: 800;
 }
 
 .ejemplo-oferta {
