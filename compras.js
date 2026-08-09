@@ -424,8 +424,11 @@ async function cargarMaduracion() {
         <div class="detalle-pedido">
           <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
           <p class="muted">Precio actual ${formatoMoneda(s.precio_actual)} → sugerido ${formatoMoneda(s.precio_sugerido)} (-${s.descuento_pct}%)</p>
+          <label class="oculto campo-precio-maduracion">Precio a aplicar
+            <input type="number" min="0" step="1" class="input-precio-maduracion" value="${s.precio_sugerido}">
+          </label>
           <div class="acciones-pedido">
-            <button class="btn-confirmar btn-aplicar-maduracion" data-lote-id="${s.lote_id}" data-precio="${s.precio_sugerido}">Usar este precio</button>
+            <button class="btn-confirmar btn-aplicar-maduracion" data-lote-id="${s.lote_id}">Usar este precio</button>
             <button class="btn-cancelar btn-ignorar-maduracion">Ignorar</button>
           </div>
         </div>
@@ -525,10 +528,29 @@ elListaMaduracion.addEventListener('click', async (e) => {
 
   const btnAplicar = e.target.closest('.btn-aplicar-maduracion')
   if (btnAplicar) {
+    const fila = btnAplicar.closest('.detalle-pedido')
+    const campo = fila.querySelector('.campo-precio-maduracion')
+    const input = fila.querySelector('.input-precio-maduracion')
+
+    if (campo.classList.contains('oculto')) {
+      // Primer toque: solo mostramos el campo con el sugerido ya seleccionado, no guardamos todavía
+      campo.classList.remove('oculto')
+      input.focus()
+      input.select()
+      btnAplicar.textContent = 'Guardar'
+      return
+    }
+
+    const precio = Number(input.value)
+    if (!precio || precio <= 0) {
+      alert('Poné un precio válido.')
+      return
+    }
+
     btnAplicar.disabled = true
     const { error } = await supabase
       .from('lotes')
-      .update({ precio: Number(btnAplicar.dataset.precio) })
+      .update({ precio })
       .eq('id', btnAplicar.dataset.loteId)
 
     if (error) {
