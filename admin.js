@@ -61,7 +61,7 @@ async function cargarPendientes() {
   const { data, error } = await supabase
     .from('pedidos')
     .select('*')
-    .in('estado', ['pendiente_efectivo', 'pendiente_transferencia'])
+    .in('estado', ['pendiente_efectivo', 'pendiente_transferencia', 'pendiente_combinado'])
     .order('creado_en', { ascending: true })
 
   if (error) {
@@ -92,7 +92,11 @@ async function cargarPendientes() {
 
   listaPendientes.innerHTML = ''
   pedidosConItems.forEach(pedido => {
-    const metodoTexto = pedido.metodo_pago === 'efectivo' ? 'Efectivo' : 'Transferencia'
+    const metodoTexto = pedido.metodo_pago === 'efectivo'
+      ? 'Efectivo'
+      : pedido.metodo_pago === 'combinado'
+        ? `Combinado (${formatoMoneda(pedido.monto_efectivo)} efectivo + ${formatoMoneda(pedido.monto_transferencia)} transf.)`
+        : 'Transferencia'
     const filaItems = pedido.items.map(it => {
       const unidad = it.productos?.tipo === 'peso' ? 'kg' : ''
       return `<div class="item-detalle">
