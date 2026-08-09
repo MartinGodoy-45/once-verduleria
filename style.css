@@ -677,3 +677,49 @@ body {
   padding: 12px;
   margin-bottom: 4px;
 }
+
+/* --- Pago combinado --- */
+
+.panel-combinado {
+  margin-top: 14px;
+  padding: 14px;
+  background: var(--blanco);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+}
+
+.panel-combinado label {
+  display: block;
+  font-size: 14px;
+  color: var(--texto-suave);
+  margin-bottom: 10px;
+}
+
+.panel-combinado input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  margin-top: 6px;
+  box-sizing: border-box;
+}
+
+.campo-precio-maduracion {
+  display: block;
+  font-size: 13px;
+  color: var(--texto-suave);
+  margin: 6px 0 10px;
+}
+
+.input-precio-maduracion {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
