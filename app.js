@@ -259,14 +259,44 @@ document.getElementById('btn-ver-carrito').addEventListener('click', () => {
 })
 document.getElementById('btn-cerrar-carrito').addEventListener('click', () => mostrar(null))
 document.getElementById('btn-ir-pago').addEventListener('click', () => mostrar(vistaPago))
-document.getElementById('btn-cerrar-pago').addEventListener('click', () => mostrar(vistaCarrito))
+document.getElementById('btn-cerrar-pago').addEventListener('click', () => {
+  elPanelCombinado.classList.add('oculto')
+  mostrar(vistaCarrito)
+})
 
 // --- Checkout ---
 document.querySelectorAll('.metodo-pago[data-metodo]').forEach(btn => {
   btn.addEventListener('click', () => confirmarPedido(btn.dataset.metodo))
 })
 
-async function confirmarPedido(metodo) {
+// El pago combinado necesita un paso extra (cuánto va en efectivo) antes de confirmar
+const elPanelCombinado = document.getElementById('panel-combinado')
+const elInputCombinadoEfectivo = document.getElementById('input-combinado-efectivo')
+const elCombinadoTransferencia = document.getElementById('combinado-transferencia')
+
+document.getElementById('btn-metodo-combinado').addEventListener('click', () => {
+  elInputCombinadoEfectivo.value = ''
+  elCombinadoTransferencia.textContent = formatoMoneda(totalCarrito())
+  elPanelCombinado.classList.remove('oculto')
+  elInputCombinadoEfectivo.focus()
+})
+
+elInputCombinadoEfectivo.addEventListener('input', () => {
+  const efectivo = Number(elInputCombinadoEfectivo.value) || 0
+  const restante = Math.max(totalCarrito() - efectivo, 0)
+  elCombinadoTransferencia.textContent = formatoMoneda(restante)
+})
+
+document.getElementById('btn-confirmar-combinado').addEventListener('click', () => {
+  const efectivo = Number(elInputCombinadoEfectivo.value)
+  if (!efectivo || efectivo <= 0 || efectivo >= totalCarrito()) {
+    alert('Poné un monto en efectivo mayor a $0 y menor al total (si es todo en un método, usá Efectivo o Transferencia directamente).')
+    return
+  }
+  confirmarPedido('combinado', efectivo)
+})
+
+async function confirmarPedido(metodo, montoEfectivo) {
   if (!pedidoActualId) {
     alert('Todavía no agregaste nada al carrito.')
     return
@@ -296,7 +326,8 @@ async function confirmarPedido(metodo) {
   // cliente nunca decide su propio monto ni su propio estado "pagado".
   const { data: total, error: errorConfirmar } = await supabase.rpc('confirmar_metodo_pago', {
     p_pedido_id: pedidoActualId,
-    p_metodo: metodo
+    p_metodo: metodo,
+    p_monto_efectivo: metodo === 'combinado' ? montoEfectivo : null
   })
 
   if (errorConfirmar) {
@@ -308,19 +339,27 @@ async function confirmarPedido(metodo) {
     return
   }
 
-  mostrarEspera(metodo, total)
+  elPanelCombinado.classList.add('oculto')
+  mostrarEspera(metodo, total, montoEfectivo)
   carrito = {}
   renderProductos()
   actualizarBarraCarrito()
 }
 
-function mostrarEspera(metodo, total) {
+function mostrarEspera(metodo, total, montoEfectivo) {
   document.getElementById('espera-numero-pedido').textContent = 'Pedido #' + pedidoNumeroCorto
   document.getElementById('espera-monto').textContent = formatoMoneda(total)
-  document.getElementById('espera-instrucciones').textContent =
-    metodo === 'efectivo'
-      ? 'Acercate al mostrador a pagar y retirar tu compra.'
-      : 'Transferí el total y esperá la confirmación acá mismo.'
+
+  let instrucciones
+  if (metodo === 'efectivo') {
+    instrucciones = 'Acercate al mostrador a pagar y retirar tu compra.'
+  } else if (metodo === 'combinado') {
+    instrucciones = `Transferí ${formatoMoneda(total - montoEfectivo)} y acercate al mostrador con ${formatoMoneda(montoEfectivo)} en efectivo.`
+  } else {
+    instrucciones = 'Transferí el total y esperá la confirmación acá mismo.'
+  }
+  document.getElementById('espera-instrucciones').textContent = instrucciones
+
   document.getElementById('espera-estado').textContent = 'Esperando confirmación'
   document.getElementById('espera-estado').className = 'espera-estado'
   document.getElementById('btn-nuevo-pedido').classList.add('oculto')
