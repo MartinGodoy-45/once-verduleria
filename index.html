@@ -57,10 +57,22 @@
       <span class="metodo-titulo">Transferencia</span>
       <span class="metodo-sub">Por alias, confirmamos al ver el ingreso</span>
     </button>
+    <button class="metodo-pago" id="btn-metodo-combinado">
+      <span class="metodo-titulo">Pago combinado</span>
+      <span class="metodo-sub">Parte efectivo, parte transferencia</span>
+    </button>
     <button class="metodo-pago" disabled>
       <span class="metodo-titulo">QR Mercado Pago</span>
       <span class="metodo-sub">Próximamente</span>
     </button>
+  </div>
+
+  <div id="panel-combinado" class="panel-combinado oculto">
+    <label>¿Cuánto pagás en efectivo?
+      <input type="number" id="input-combinado-efectivo" min="0" step="1" inputmode="decimal">
+    </label>
+    <p class="muted">Transferencia: <strong id="combinado-transferencia">$0</strong></p>
+    <button class="btn-primario" id="btn-confirmar-combinado">Confirmar pago combinado</button>
   </div>
 </section>
 
