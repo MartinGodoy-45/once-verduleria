@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pago pendiente - once</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4f7f2;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 40px 32px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .icon {
+    width: 72px;
+    height: 72px;
+    background: #f9a825;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+  .icon svg {
+    width: 36px;
+    height: 36px;
+  }
+  h1 {
+    color: #1b1b1b;
+    font-size: 22px;
+    margin: 0 0 12px;
+  }
+  p {
+    color: #555;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 0 24px;
+  }
+  a.btn {
+    display: inline-block;
+    background: #f9a825;
+    color: #1b1b1b;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+    </div>
+    <h1>Tu pago está pendiente</h1>
+    <p>Mercado Pago todavía está confirmando tu pago (puede pasar con transferencias o algunos medios). Te vamos a avisar apenas se acredite.</p>
+    <a class="btn" href="./index.html">Volver al catálogo</a>
+  </div>
+</body>
+</html>
