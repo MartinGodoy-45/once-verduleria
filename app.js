@@ -345,7 +345,7 @@ async function confirmarPedido(metodo, montoEfectivo) {
 // --- Pago con Mercado Pago ---
 // A diferencia de los otros métodos, acá no mostramos la pantalla de "esperando":
 // mandamos al cliente directo a Mercado Pago a pagar, y vuelve a nuestras páginas
-// de éxito/fallo/pendiente. El pedido queda registrado con estado "mercadopago"
+// de éxito/fallo/pendiente. El pedido queda registrado con estado "pendiente_mp"
 // pendiente de confirmación manual desde el panel admin (por ahora).
 async function pagarConMercadoPago() {
   if (!pedidoActualId) {
@@ -374,7 +374,7 @@ async function pagarConMercadoPago() {
 
   const { error: errorConfirmar } = await supabase.rpc('confirmar_metodo_pago', {
     p_pedido_id: pedidoActualId,
-    p_metodo: 'mercadopago',
+    p_metodo: 'mercado_pago', // <-- CORREGIDO (antes decía 'mercadopago', sin guión bajo)
     p_monto_efectivo: null
   })
 
