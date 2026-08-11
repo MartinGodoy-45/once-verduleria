@@ -723,3 +723,21 @@ body {
   margin-top: 4px;
   box-sizing: border-box;
 }
+
+.detalle-pedido label {
+  display: block;
+  font-size: 13px;
+  color: var(--texto-suave);
+  margin: 8px 0 10px;
+}
+
+.detalle-pedido input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
