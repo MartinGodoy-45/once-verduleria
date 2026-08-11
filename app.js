@@ -96,16 +96,12 @@ function renderProductos() {
 
     let controles
     if (esPeso) {
-      // La foto es el botón: tocarla abre la pantalla grande de pesaje.
-      // Acá abajo solo mostramos un resumen de lo que ya está en el carrito.
       controles = cantidad > 0
         ? `<p class="resumen-peso">En el carrito: ${cantidad} kg · tocá la foto para editar</p>`
         : `<p class="muted resumen-peso">Tocá la foto para pesar</p>`
     } else if (cantidad === 0) {
       controles = `<button class="btn-agregar" data-id="${p.id}">Agregar</button>`
     } else {
-      // Por unidad: +/-1 para ajustes rápidos, pero el número también se puede tipear
-      // directo (para "cartón de 35 huevos" nadie va a tocar + treinta y cinco veces)
       controles = `
         <div class="fila-cantidad">
           <button class="btn-cantidad" data-id="${p.id}" data-accion="restar">−</button>
@@ -160,7 +156,6 @@ elLista.addEventListener('click', async (e) => {
   actualizarBarraCarrito()
 })
 
-// Cuando tipean directo la cantidad de unidades (ej. "35" para un cartón de huevos)
 elLista.addEventListener('change', (e) => {
   const input = e.target.closest('.input-unidad')
   if (!input) return
@@ -266,7 +261,11 @@ document.getElementById('btn-cerrar-pago').addEventListener('click', () => {
 
 // --- Checkout ---
 document.querySelectorAll('.metodo-pago[data-metodo]').forEach(btn => {
-  btn.addEventListener('click', () => confirmarPedido(btn.dataset.metodo))
+  if (btn.dataset.metodo === 'mercadopago') {
+    btn.addEventListener('click', () => pagarConMercadoPago())
+  } else {
+    btn.addEventListener('click', () => confirmarPedido(btn.dataset.metodo))
+  }
 })
 
 // El pago combinado necesita un paso extra (cuánto va en efectivo) antes de confirmar
@@ -321,9 +320,6 @@ async function confirmarPedido(metodo, montoEfectivo) {
     return
   }
 
-  // Esta función calcula el total posta en el servidor (sumando los items
-  // recién insertados) y recién ahí cambia el estado del pedido -- el
-  // cliente nunca decide su propio monto ni su propio estado "pagado".
   const { data: total, error: errorConfirmar } = await supabase.rpc('confirmar_metodo_pago', {
     p_pedido_id: pedidoActualId,
     p_metodo: metodo,
@@ -344,6 +340,86 @@ async function confirmarPedido(metodo, montoEfectivo) {
   carrito = {}
   renderProductos()
   actualizarBarraCarrito()
+}
+
+// --- Pago con Mercado Pago ---
+// A diferencia de los otros métodos, acá no mostramos la pantalla de "esperando":
+// mandamos al cliente directo a Mercado Pago a pagar, y vuelve a nuestras páginas
+// de éxito/fallo/pendiente. El pedido queda registrado con estado "mercadopago"
+// pendiente de confirmación manual desde el panel admin (por ahora).
+async function pagarConMercadoPago() {
+  if (!pedidoActualId) {
+    alert('Todavía no agregaste nada al carrito.')
+    return
+  }
+
+  const items = Object.entries(carrito).map(([producto_id, cantidad]) => {
+    const p = productos.find(p => p.id === producto_id)
+    const precio = precioPorCantidad(p, cantidad)
+    return {
+      pedido_id: pedidoActualId,
+      producto_id,
+      cantidad,
+      precio_unitario: precio,
+      subtotal: precio * cantidad
+    }
+  })
+
+  const { error: errorItems } = await supabase.from('pedido_items').insert(items)
+  if (errorItems) {
+    alert('Hubo un problema al cargar los productos. Probá de nuevo.')
+    console.error(errorItems)
+    return
+  }
+
+  const { error: errorConfirmar } = await supabase.rpc('confirmar_metodo_pago', {
+    p_pedido_id: pedidoActualId,
+    p_metodo: 'mercadopago',
+    p_monto_efectivo: null
+  })
+
+  if (errorConfirmar) {
+    const mensaje = errorConfirmar.message?.includes('stock')
+      ? 'Uno de los productos ya no tiene stock suficiente. Ajustá la cantidad y probá de nuevo.'
+      : 'No se pudo confirmar el pedido. Probá de nuevo.'
+    alert(mensaje)
+    console.error(errorConfirmar)
+    return
+  }
+
+  // Un solo ítem por línea con cantidad 1 (evita problemas con Mercado Pago
+  // y cantidades fraccionadas, como 1.5 kg de algo)
+  const itemsParaMP = Object.entries(carrito).map(([producto_id, cantidad]) => {
+    const p = productos.find(p => p.id === producto_id)
+    const totalLinea = precioPorCantidad(p, cantidad) * cantidad
+    const nombre = p.tipo === 'peso' ? `${p.nombre} (${cantidad} kg)` : p.nombre
+    return { nombre, cantidad: 1, precioUnitario: totalLinea }
+  })
+
+  let initPoint
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/crear-preferencia-pago`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ items: itemsParaMP })
+    })
+    const data = await resp.json()
+    if (!resp.ok || !data.init_point) {
+      throw new Error(data.error || 'Sin init_point')
+    }
+    initPoint = data.init_point
+  } catch (err) {
+    console.error(err)
+    alert('No se pudo generar el link de pago de Mercado Pago. Probá con otro medio.')
+    return
+  }
+
+  carrito = {}
+  window.location.href = initPoint
 }
 
 function mostrarEspera(metodo, total, montoEfectivo) {
@@ -400,9 +476,6 @@ document.getElementById('btn-nuevo-pedido').addEventListener('click', () => {
 })
 
 // --- Service worker (para que se pueda instalar y funcione offline el shell) ---
-// El service worker queda pausado mientras seguimos probando cambios seguido:
-// el cacheo agresivo estaba haciendo que vieran versiones viejas todo el tiempo.
-// Lo reactivamos cuando el sistema esté estable, para la versión "final".
 const SERVICE_WORKER_ACTIVO = false
 
 if (SERVICE_WORKER_ACTIVO && 'serviceWorker' in navigator) {
@@ -410,7 +483,6 @@ if (SERVICE_WORKER_ACTIVO && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(console.error)
   })
 } else if ('serviceWorker' in navigator) {
-  // Por las dudas, si alguien ya tenía uno registrado de antes, lo sacamos
   navigator.serviceWorker.getRegistrations().then(regs => {
     regs.forEach(reg => reg.unregister())
   })
