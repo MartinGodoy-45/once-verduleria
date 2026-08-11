@@ -503,10 +503,10 @@ elListaPrecioLotes.addEventListener('click', async (e) => {
   }
 
   btn.disabled = true
-  const { error } = await supabase
-    .from('lotes')
-    .update({ precio })
-    .eq('id', btn.dataset.loteId)
+  const { error } = await supabase.rpc('confirmar_precio_maduracion', {
+    p_lote_id: btn.dataset.loteId,
+    p_precio: precio
+  })
 
   btn.disabled = false
 
@@ -548,10 +548,10 @@ elListaMaduracion.addEventListener('click', async (e) => {
     }
 
     btnAplicar.disabled = true
-    const { error } = await supabase
-      .from('lotes')
-      .update({ precio })
-      .eq('id', btnAplicar.dataset.loteId)
+    const { error } = await supabase.rpc('confirmar_precio_maduracion', {
+      p_lote_id: btnAplicar.dataset.loteId,
+      p_precio: precio
+    })
 
     if (error) {
       alert('No se pudo actualizar el precio del lote. Probá de nuevo.')
