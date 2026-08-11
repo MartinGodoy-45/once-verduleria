@@ -410,12 +410,17 @@ async function cargarMaduracion() {
     fila.className = 'fila-pendiente-wrap'
 
     if (s.retirar) {
+      const productoDeEsteLote = productoSeleccionado(s.producto_id)
+      const unidadLote = productoDeEsteLote?.tipo === 'unidad' ? 'unidades' : 'kg'
       fila.innerHTML = `
         <div class="detalle-pedido">
           <div class="fila-titulo">${s.nombre} · ${s.dias_efectivos}d</div>
-          <p class="muted">Este lote ya pasó su punto de venta. Conviene darlo de baja.</p>
+          <p class="muted">Este lote ya pasó su punto de venta. Quedan ${s.cantidad_restante} ${unidadLote} — si parte todavía se puede vender (ej: sacando hojas feas), poné solo lo que se pierde.</p>
+          <label>Cantidad que se pierde
+            <input type="number" min="0.01" step="0.01" class="input-cantidad-baja" value="${s.cantidad_restante}" data-max="${s.cantidad_restante}">
+          </label>
           <div class="acciones-pedido">
-            <button class="btn-cancelar btn-dar-de-baja" data-producto-id="${s.producto_id}" data-cantidad="${s.cantidad_restante}">Registrar como merma</button>
+            <button class="btn-cancelar btn-dar-de-baja" data-producto-id="${s.producto_id}">Registrar como merma</button>
           </div>
         </div>
       `
@@ -565,11 +570,25 @@ elListaMaduracion.addEventListener('click', async (e) => {
 
   const btnBaja = e.target.closest('.btn-dar-de-baja')
   if (btnBaja) {
-    if (!confirm('¿Registrar todo lo que queda de este lote como merma?')) return
+    const fila = btnBaja.closest('.detalle-pedido')
+    const inputCantidad = fila.querySelector('.input-cantidad-baja')
+    const cantidad = Number(inputCantidad.value)
+    const maximo = Number(inputCantidad.dataset.max)
+
+    if (!cantidad || cantidad <= 0) {
+      alert('Poné cuánto se pierde.')
+      return
+    }
+    if (cantidad > maximo) {
+      alert(`No puede ser más de lo que queda en el lote (${maximo}).`)
+      return
+    }
+
+    if (!confirm(`¿Registrar ${cantidad} como merma?`)) return
     btnBaja.disabled = true
     const { error } = await supabase.rpc('registrar_merma', {
       p_producto_id: btnBaja.dataset.productoId,
-      p_cantidad: Number(btnBaja.dataset.cantidad),
+      p_cantidad: cantidad,
       p_motivo: 'vencido'
     })
 
