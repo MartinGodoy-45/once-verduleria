@@ -61,6 +61,7 @@ Y entrar a `http://localhost:8000` desde el navegador.
 - [ ] Ofertas combo entre productos distintos (ej: "2kg banana + 2kg naranja = $X"): hoy el sistema solo sabe hacer ofertas de un producto contra sí mismo (por cantidad o por maduración). Combos cruzados entre productos es una idea a futuro, sin diseñar todavía.
 - [ ] Integración del flujo de pedidos por WhatsApp de Florencia al sistema (bajo volumen hoy — no automatizar con herramientas no oficiales por riesgo de baneo de WhatsApp; retomar si el volumen crece).
 - [ ] Perfil B de maduración (lechuga, acelga) pasa directo de precio normal a "retirar", sin ninguna etapa de remate intermedia — en la práctica se puede sacar la parte fea (por peso) y seguir vendiendo el resto más barato. Evaluar en el chat de estrategia si conviene agregarle un paso de remate antes del retiro total, como tienen los demás perfiles.
+- [ ] Pantalla de KPIs en el panel: % de merma, rotación/días en stock por producto, margen real vs. objetivo (ya existe `vista_margen_productos`, solo falta pantalla), efectividad de las ofertas de maduración. Esperar a tener ventas reales cargadas antes de construirla — con datos de prueba los números no dicen nada.
 
 ## Credenciales
 
