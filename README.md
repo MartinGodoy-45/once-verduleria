@@ -60,6 +60,7 @@ Y entrar a `http://localhost:8000` desde el navegador.
 - [ ] Umbral de kg para la oferta por volumen (hoy fijo en `UMBRAL_KG_OFERTA = 2` dentro de `app.js`, igual para todos los productos): en algún momento podría convenir que sea editable por producto desde la pantalla de compras, en vez de un número fijo en el código.
 - [ ] Ofertas combo entre productos distintos (ej: "2kg banana + 2kg naranja = $X"): hoy el sistema solo sabe hacer ofertas de un producto contra sí mismo (por cantidad o por maduración). Combos cruzados entre productos es una idea a futuro, sin diseñar todavía.
 - [ ] Integración del flujo de pedidos por WhatsApp de Florencia al sistema (bajo volumen hoy — no automatizar con herramientas no oficiales por riesgo de baneo de WhatsApp; retomar si el volumen crece).
+- [ ] Perfil B de maduración (lechuga, acelga) pasa directo de precio normal a "retirar", sin ninguna etapa de remate intermedia — en la práctica se puede sacar la parte fea (por peso) y seguir vendiendo el resto más barato. Evaluar en el chat de estrategia si conviene agregarle un paso de remate antes del retiro total, como tienen los demás perfiles.
 
 ## Credenciales
 
