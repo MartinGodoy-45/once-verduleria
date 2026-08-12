@@ -313,6 +313,12 @@ async function confirmarPedido(metodo, montoEfectivo) {
     }
   })
 
+  // Por si esta función se llama más de una vez para el mismo pedido (reintentos,
+  // doble click, un método que falló y se probó con otro), primero limpiamos
+  // cualquier item que haya quedado de un intento anterior -- si no, se acumulan
+  // y el pedido termina pidiendo mucho más de lo que el cliente puso en el carrito.
+  await supabase.from('pedido_items').delete().eq('pedido_id', pedidoActualId)
+
   const { error: errorItems } = await supabase.from('pedido_items').insert(items)
   if (errorItems) {
     alert('Hubo un problema al cargar los productos. Probá de nuevo.')
@@ -364,6 +370,12 @@ async function pagarConMercadoPago() {
       subtotal: precio * cantidad
     }
   })
+
+  // Por si esta función se llama más de una vez para el mismo pedido (reintentos,
+  // doble click, un método que falló y se probó con otro), primero limpiamos
+  // cualquier item que haya quedado de un intento anterior -- si no, se acumulan
+  // y el pedido termina pidiendo mucho más de lo que el cliente puso en el carrito.
+  await supabase.from('pedido_items').delete().eq('pedido_id', pedidoActualId)
 
   const { error: errorItems } = await supabase.from('pedido_items').insert(items)
   if (errorItems) {
