@@ -417,7 +417,7 @@ async function pagarConMercadoPago() {
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'apikey': SUPABASE_ANON_KEY
       },
-      body: JSON.stringify({ items: itemsParaMP })
+      body: JSON.stringify({ items: itemsParaMP, pedidoId: pedidoActualId })
     })
     const data = await resp.json()
     if (!resp.ok || !data.init_point) {
