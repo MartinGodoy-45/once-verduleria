@@ -129,11 +129,10 @@ async function cargarPendientes() {
 listaPendientes.addEventListener('click', async (e) => {
   const btnCancelar = e.target.closest('.btn-cancelar')
   if (btnCancelar) {
-    if (!confirm('¿Cancelar este pedido? No se puede deshacer.')) return
-    const { error } = await supabase
-      .from('pedidos')
-      .update({ estado: 'cancelado' })
-      .eq('id', btnCancelar.dataset.id)
+    if (!confirm('¿Cancelar este pedido? Se repone el stock automáticamente. No se puede deshacer.')) return
+    const { error } = await supabase.rpc('cancelar_pedido', {
+      p_pedido_id: btnCancelar.dataset.id
+    })
     if (error) {
       alert('No se pudo cancelar. Probá de nuevo.')
       console.error(error)
@@ -142,7 +141,6 @@ listaPendientes.addEventListener('click', async (e) => {
     cargarPendientes()
     return
   }
-
   const btn = e.target.closest('.btn-confirmar')
   if (!btn) return
   btn.disabled = true
