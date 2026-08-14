@@ -3,103 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2F7A4D">
+<meta name="theme-color" content="#2E7D52">
 <title>once · verdulería</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="topbar">
-  <span class="brand">once</span>
-  <span class="brand-sub">verdulería</span>
-  <span id="badge-pedido" class="badge-pedido oculto"></span>
+  <div class="brand-wrap">
+    <span class="brand">once</span>
+    <span class="brand-sub">verdulería autoservicio</span>
+  </div>
+  <div class="topbar-right">
+    <span class="fresh-pill"><span class="leaf-dot">✦</span> fresco todos los días</span>
+    <span id="badge-pedido" class="badge-pedido oculto"></span>
+  </div>
 </header>
 
-<main id="vista-catalogo">
+<main id="vista-catalogo" class="catalogo">
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">BUENO · FRESCO · SIMPLE</span>
+      <h1>Elegí lo que querés.<br><strong>Nosotros hacemos el resto.</strong></h1>
+      <p>Seleccioná tus productos, pesalos en la balanza y armá tu compra en pocos pasos.</p>
+      <div class="hero-actions">
+        <span class="hero-note"><span>⚖</span> Pesaje rápido en cada producto por kilo</span>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="hero-circle hero-circle-one"></div>
+      <div class="hero-circle hero-circle-two"></div>
+      <img src="productos/manzana.png" alt="" class="hero-fruit hero-fruit-main">
+      <img src="productos/tomate.png" alt="" class="hero-fruit hero-fruit-small">
+      <span class="hero-leaf leaf-one">❧</span>
+      <span class="hero-leaf leaf-two">❧</span>
+    </div>
+  </section>
+
+  <section class="promo-strip" aria-label="Promociones">
+    <div class="promo-main">
+      <div class="promo-icon">%</div>
+      <div>
+        <span class="promo-kicker">OFERTAS DE LA SEMANA</span>
+        <strong>Más llevás, más aprovechás</strong>
+        <span>Las promociones aparecen directamente en cada producto.</span>
+      </div>
+    </div>
+    <div class="promo-arrow">→</div>
+  </section>
+
+  <section class="catalog-head">
+    <div>
+      <span class="section-kicker">FRESCO PARA VOS</span>
+      <h2>Elegí tus productos</h2>
+    </div>
+    <div class="catalog-tip"><span>☝</span> Tocá una fruta o verdura para pesarla</div>
+  </section>
+
+  <div class="category-pills" aria-label="Categorías">
+    <button class="category-pill active">Todo</button>
+    <button class="category-pill">🍎 Frutas</button>
+    <button class="category-pill">🥬 Verduras</button>
+    <button class="category-pill">🥔 Papas y raíces</button>
+    <button class="category-pill">🌿 Aromáticas</button>
+  </div>
+
   <div id="lista-productos" class="grid-productos">
     <p class="muted">Cargando productos…</p>
   </div>
+
+  <section class="bottom-promise">
+    <div class="promise-icon">✓</div>
+    <div>
+      <strong>Tu compra, simple y transparente</strong>
+      <span>Vas a ver el peso y el precio antes de agregar cada producto.</span>
+    </div>
+  </section>
 </main>
 
 <footer id="barra-carrito" class="barra-carrito oculto">
-  <button id="btn-ver-carrito" class="btn-primario">
-    <span id="carrito-cantidad">0</span> productos · <span id="carrito-total">$0</span>
+  <button id="btn-ver-carrito" class="btn-primario cart-bar-button">
+    <span class="cart-bar-left"><span class="cart-icon">🛒</span><span><b id="carrito-cantidad">0</b> productos</span></span>
+    <span class="cart-bar-right"><span id="carrito-total">$0</span><span class="cart-arrow">→</span></span>
   </button>
 </footer>
 
 <section id="vista-carrito" class="panel oculto">
-  <div class="panel-header">
-    <h2>Tu changuito</h2>
-    <button class="btn-texto" id="btn-cerrar-carrito">Volver</button>
+  <div class="panel-shell">
+    <div class="panel-header">
+      <div class="panel-title-wrap"><span class="panel-icon">🛒</span><div><span class="section-kicker">TU COMPRA</span><h2>Tu changuito</h2></div></div>
+      <button class="btn-texto" id="btn-cerrar-carrito">Volver</button>
+    </div>
+    <div id="lista-carrito"></div>
+    <div class="total-card"><span>Total de tu compra</span><strong id="carrito-total-2">$0</strong></div>
+    <button id="btn-ir-pago" class="btn-primario btn-ancho">Continuar al pago <span>→</span></button>
   </div>
-  <div id="lista-carrito"></div>
-  <div class="total-row">
-    <span>Total</span>
-    <strong id="carrito-total-2">$0</strong>
-  </div>
-  <button id="btn-ir-pago" class="btn-primario btn-ancho">Pagar</button>
 </section>
 
 <section id="vista-pago" class="panel oculto">
-  <div class="panel-header">
-    <h2>¿Cómo pagás?</h2>
-    <button class="btn-texto" id="btn-cerrar-pago">Volver</button>
-  </div>
-  <div class="metodos-pago">
-    <button class="metodo-pago" data-metodo="efectivo">
-      <span class="metodo-titulo">Efectivo</span>
-      <span class="metodo-sub">Pagás en el mostrador</span>
-    </button>
-    <button class="metodo-pago" data-metodo="transferencia">
-      <span class="metodo-titulo">Transferencia</span>
-      <span class="metodo-sub">Por alias, confirmamos al ver el ingreso</span>
-    </button>
-    <button class="metodo-pago" id="btn-metodo-combinado">
-      <span class="metodo-titulo">Pago combinado</span>
-      <span class="metodo-sub">Parte efectivo, parte transferencia</span>
-    </button>
-    <button class="metodo-pago" data-metodo="mercadopago">
-      <span class="metodo-titulo">Mercado Pago</span>
-      <span class="metodo-sub">Con un pequeño recargo por el costo del servicio</span>
-    </button>
-  </div>
-
-  <div id="panel-combinado" class="panel-combinado oculto">
-    <label>¿Cuánto pagás en efectivo?
-      <input type="number" id="input-combinado-efectivo" min="0" step="1" inputmode="decimal">
-    </label>
-    <p class="muted">Transferencia: <strong id="combinado-transferencia">$0</strong></p>
-    <button class="btn-primario" id="btn-confirmar-combinado">Confirmar pago combinado</button>
+  <div class="panel-shell narrow-shell">
+    <div class="panel-header">
+      <div class="panel-title-wrap"><span class="panel-icon">💳</span><div><span class="section-kicker">ÚLTIMO PASO</span><h2>¿Cómo pagás?</h2></div></div>
+      <button class="btn-texto" id="btn-cerrar-pago">Volver</button>
+    </div>
+    <p class="panel-lead">Elegí la forma que te resulte más cómoda.</p>
+    <div class="metodos-pago">
+      <button class="metodo-pago" data-metodo="efectivo"><span class="pay-icon">💵</span><span><span class="metodo-titulo">Efectivo</span><span class="metodo-sub">Pagás en el mostrador</span></span><span class="pay-arrow">→</span></button>
+      <button class="metodo-pago" data-metodo="transferencia"><span class="pay-icon">🏦</span><span><span class="metodo-titulo">Transferencia</span><span class="metodo-sub">Por alias, confirmamos al ver el ingreso</span></span><span class="pay-arrow">→</span></button>
+      <button class="metodo-pago" id="btn-metodo-combinado"><span class="pay-icon">🔄</span><span><span class="metodo-titulo">Pago combinado</span><span class="metodo-sub">Parte efectivo, parte transferencia</span></span><span class="pay-arrow">→</span></button>
+      <button class="metodo-pago mercadopago" data-metodo="mercadopago"><span class="pay-icon">MP</span><span><span class="metodo-titulo">Mercado Pago</span><span class="metodo-sub">Con un pequeño recargo por el costo del servicio</span></span><span class="pay-arrow">→</span></button>
+    </div>
+    <div id="panel-combinado" class="panel-combinado oculto">
+      <label>¿Cuánto pagás en efectivo?
+        <input type="number" id="input-combinado-efectivo" min="0" step="1" inputmode="decimal">
+      </label>
+      <p class="muted">Transferencia: <strong id="combinado-transferencia">$0</strong></p>
+      <button class="btn-primario" id="btn-confirmar-combinado">Confirmar pago combinado</button>
+    </div>
   </div>
 </section>
 
 <section id="vista-espera" class="panel oculto">
-  <div class="espera-contenido">
+  <div class="espera-contenido panel-shell narrow-shell">
+    <div class="success-orbit">✓</div>
     <p class="espera-numero" id="espera-numero-pedido">Pedido</p>
     <p class="espera-monto" id="espera-monto">$0</p>
     <p id="espera-estado" class="espera-estado">Esperando confirmación</p>
-    <p class="muted" id="espera-instrucciones"></p>
+    <p class="muted espera-copy" id="espera-instrucciones"></p>
     <button id="btn-nuevo-pedido" class="btn-texto oculto">Hacer otro pedido</button>
   </div>
 </section>
 
 <section id="vista-pesaje" class="panel oculto">
-  <div class="panel-header">
-    <h2 id="pesaje-nombre">Producto</h2>
-    <button class="btn-texto" id="btn-cerrar-pesaje">Cancelar</button>
-  </div>
-  <div class="pesaje-contenido">
-    <div class="pesaje-input-fila">
-      <input type="number" id="pesaje-input" class="input-pesaje-grande" min="0.1" step="0.1" inputmode="decimal" value="0.0">
-      <span class="pesaje-unidad">kg</span>
+  <div class="panel-shell weigh-shell">
+    <div class="panel-header">
+      <div class="panel-title-wrap"><span class="panel-icon">⚖</span><div><span class="section-kicker">PESAJE</span><h2 id="pesaje-nombre">Producto</h2></div></div>
+      <button class="btn-texto" id="btn-cerrar-pesaje">Cancelar</button>
     </div>
-    <p class="pesaje-precio-kg" id="pesaje-precio-kg"></p>
-    <p class="pesaje-subtotal" id="pesaje-subtotal">$0</p>
+    <div class="weigh-hint"><span>⚖</span><div><strong>Colocá el producto en la balanza</strong><small>Por ahora podés ingresar el peso manualmente. La balanza automática se conectará más adelante.</small></div></div>
+    <div class="pesaje-contenido">
+      <div class="pesaje-input-fila"><input type="number" id="pesaje-input" class="input-pesaje-grande" min="0.1" step="0.1" inputmode="decimal" value="0.0"><span class="pesaje-unidad">kg</span></div>
+      <p class="pesaje-precio-kg" id="pesaje-precio-kg"></p>
+      <p class="pesaje-subtotal" id="pesaje-subtotal">$0</p>
+    </div>
+    <button id="btn-agregar-pesaje" class="btn-primario btn-ancho">Agregar al carrito <span>→</span></button>
   </div>
-  <button id="btn-agregar-pesaje" class="btn-primario btn-ancho">Agregar al carrito</button>
 </section>
 
 <script type="module" src="app.js"></script>
