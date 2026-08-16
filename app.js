@@ -9,6 +9,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // --- Estado en memoria ---
 let productos = []
+let categorias = []
+let promociones = []
+let categoriaFiltroActiva = '' // '' = "Todo"
 let carrito = {} // { producto_id: cantidad }
 let pedidoActualId = null
 let pedidoNumeroCorto = null
@@ -56,8 +59,21 @@ const UMBRAL_KG_OFERTA = 2
 
 function precioPorCantidad(p, cantidad) {
   const tieneOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
-  if (tieneOferta && cantidad >= UMBRAL_KG_OFERTA) return Number(p.precio)
-  return Number(tieneOferta ? p.precio_original : p.precio)
+
+  // La rebaja por maduración (lote) siempre gana sobre una promo de marketing.
+  if (tieneOferta) {
+    if (cantidad >= UMBRAL_KG_OFERTA) return Number(p.precio)
+    return Number(p.precio_original)
+  }
+
+  // Sin rebaja por maduración activa: recién ahí se puede aplicar un
+  // descuento de marketing (ej. "15% en Aromáticas").
+  const promoMkt = descuentoMarketingVigente(p)
+  if (promoMkt) {
+    return Number(p.precio) * (1 - promoMkt.descuento_pct / 100)
+  }
+
+  return Number(p.precio)
 }
 
 function mostrar(vista) {
@@ -67,27 +83,103 @@ function mostrar(vista) {
 
 // --- Cargar catálogo ---
 async function cargarProductos() {
-  const { data, error } = await supabase
-    .from('catalogo_disponible')
-    .select('*')
-    .order('nombre')
+  const [resProductos, resCategorias, resPromociones] = await Promise.all([
+    supabase.from('catalogo_disponible').select('*').order('nombre'),
+    supabase.from('categorias').select('*').order('orden'),
+    supabase.from('promociones').select('*').eq('activa', true)
+  ])
 
-  if (error) {
+  if (resProductos.error) {
     elLista.innerHTML = `<p class="muted">No se pudo cargar el catálogo. Probá de nuevo en un rato.</p>`
-    console.error(error)
+    console.error(resProductos.error)
     return
   }
 
-  productos = data
+  productos = resProductos.data
+  categorias = resCategorias.data || []
+  // Filtramos acá las vigentes por fecha (no todas las "activa=true" están
+  // necesariamente dentro de su rango de fecha_desde/fecha_hasta hoy)
+  const hoy = new Date().toISOString().slice(0, 10)
+  promociones = (resPromociones.data || []).filter(promo =>
+    promo.fecha_desde <= hoy && (!promo.fecha_hasta || promo.fecha_hasta >= hoy)
+  )
+
   renderProductos()
+  renderPromoDestacada()
 }
+
+const elPromoStrip = document.getElementById('promo-strip')
+const elPromoStripTitulo = document.getElementById('promo-strip-titulo')
+const elPromoStripDetalle = document.getElementById('promo-strip-detalle')
+
+// Muestra el banner superior SOLO si hay una promoción marcada como
+// "destacada" en la base -- si no hay ninguna, el banner queda oculto
+// (nunca se inventa contenido de relleno).
+function renderPromoDestacada() {
+  const destacada = promociones.find(p => p.destacada)
+  if (!destacada) {
+    elPromoStrip.classList.add('oculto')
+    return
+  }
+
+  let detalle = destacada.descripcion || ''
+  if (destacada.tipo === 'oferta_producto') {
+    const prod = productos.find(p =>
+      // La promoción sabe a qué producto aplica a través de promocion_productos,
+      // que no traemos acá todavía -- por ahora usamos el nombre de la promo.
+      destacada.nombre.toLowerCase().includes(p.nombre.toLowerCase())
+    )
+    if (prod) detalle = `${prod.nombre} a ${formatoMoneda(destacada.precio_oferta)}${prod.tipo === 'peso' ? '/kg' : ''}`
+  } else if (destacada.tipo === 'descuento_porcentual') {
+    detalle = `${destacada.descuento_pct}% de descuento`
+  } else if (destacada.tipo === 'nxm') {
+    detalle = `Llevá ${destacada.cantidad_lleva} y pagá ${destacada.cantidad_paga}`
+  } else if (destacada.tipo === 'combo') {
+    detalle = `Combo por ${formatoMoneda(destacada.precio_combo)}`
+  }
+
+  elPromoStripTitulo.textContent = destacada.nombre
+  elPromoStripDetalle.textContent = detalle
+  elPromoStrip.classList.remove('oculto')
+}
+
+// Devuelve, si existe, el % de descuento de marketing vigente para un producto
+// (por categoría o por producto específico). Regla de negocio: la rebaja
+// automática por maduración (precio_original del lote) siempre gana sobre
+// esto -- por eso precioPorCantidad() chequea primero esa condición.
+function descuentoMarketingVigente(producto) {
+  return promociones.find(promo =>
+    promo.tipo === 'descuento_porcentual' && promo.categoria_id === producto.categoria_id
+  )
+}
+
+document.querySelectorAll('.category-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    categoriaFiltroActiva = btn.dataset.categoria || ''
+    document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    renderProductos()
+  })
+})
 
 // Cuánto suma cada toque de +/- en productos por unidad
 const PASO_UNIDAD = 1
 
 function renderProductos() {
   elLista.innerHTML = ''
-  productos.forEach(p => {
+  const productosFiltrados = categoriaFiltroActiva
+    ? productos.filter(p => {
+        const cat = categorias.find(c => c.id === p.categoria_id)
+        return cat && cat.nombre === categoriaFiltroActiva
+      })
+    : productos
+
+  if (productosFiltrados.length === 0) {
+    elLista.innerHTML = `<p class="muted">No hay productos en esta categoría todavía.</p>`
+    return
+  }
+
+  productosFiltrados.forEach(p => {
     const cantidad = carrito[p.id] || 0
     const esPeso = p.tipo === 'peso'
     const unidad = esPeso ? '/kg' : ''
@@ -111,8 +203,12 @@ function renderProductos() {
     }
 
     const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
-    const descuentoPct = esOferta ? Math.round((1 - p.precio / p.precio_original) * 100) : 0
+    const promoMkt = !esOferta ? descuentoMarketingVigente(p) : null
+    const descuentoPct = esOferta
+      ? Math.round((1 - p.precio / p.precio_original) * 100)
+      : (promoMkt ? promoMkt.descuento_pct : 0)
     const precioMostrado = esOferta ? p.precio_original : p.precio
+    const tieneAlgunDescuento = esOferta || !!promoMkt
 
     card.innerHTML = `
       <div class="foto-wrap">
@@ -121,7 +217,7 @@ function renderProductos() {
           : `<div class="foto-producto foto-vacia${esPeso ? ' foto-pesable' : ''}${cantidad > 0 ? ' en-carrito' : ''}" data-id="${p.id}"></div>`
         }
         ${cantidad > 0 ? '<span class="badge-check">✓</span>' : ''}
-        ${esOferta ? `<span class="cinta-oferta">-${descuentoPct}%</span>` : ''}
+        ${tieneAlgunDescuento ? `<span class="cinta-oferta">-${descuentoPct}%</span>` : ''}
       </div>
       <span class="nombre">${p.nombre}</span>
       <span class="precio">${formatoMoneda(precioMostrado)}${unidad}</span>
