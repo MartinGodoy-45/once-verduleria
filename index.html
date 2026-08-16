@@ -46,13 +46,13 @@
     </div>
   </section>
 
-  <section class="promo-strip" aria-label="Promociones">
+  <section class="promo-strip oculto" id="promo-strip" aria-label="Promociones">
     <div class="promo-main">
       <div class="promo-icon">%</div>
       <div>
-        <span class="promo-kicker">OFERTAS DE LA SEMANA</span>
-        <strong>Más llevás, más aprovechás</strong>
-        <span>Las promociones aparecen directamente en cada producto.</span>
+        <span class="promo-kicker">OFERTA DESTACADA</span>
+        <strong id="promo-strip-titulo">Más llevás, más aprovechás</strong>
+        <span id="promo-strip-detalle">Las promociones aparecen directamente en cada producto.</span>
       </div>
     </div>
     <div class="promo-arrow">→</div>
@@ -67,11 +67,12 @@
   </section>
 
   <div class="category-pills" aria-label="Categorías">
-    <button class="category-pill active">Todo</button>
-    <button class="category-pill">🍎 Frutas</button>
-    <button class="category-pill">🥬 Verduras</button>
-    <button class="category-pill">🥔 Papas y raíces</button>
-    <button class="category-pill">🌿 Aromáticas</button>
+    <button class="category-pill active" data-categoria="">Todo</button>
+    <button class="category-pill" data-categoria="Frutas">🍎 Frutas</button>
+    <button class="category-pill" data-categoria="Verduras">🥬 Verduras</button>
+    <button class="category-pill" data-categoria="Papas y raíces">🥔 Papas y raíces</button>
+    <button class="category-pill" data-categoria="Aromáticas">🌿 Aromáticas</button>
+    <button class="category-pill" data-categoria="Otros">🥚 Otros</button>
   </div>
 
   <div id="lista-productos" class="grid-productos">
