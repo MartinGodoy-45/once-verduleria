@@ -106,6 +106,7 @@ async function cargarProductos() {
 
   renderProductos()
   renderPromoDestacada()
+  iniciarHeroRotativo()
 }
 
 const elPromoStrip = document.getElementById('promo-strip')
@@ -141,6 +142,97 @@ function renderPromoDestacada() {
   elPromoStripTitulo.textContent = destacada.nombre
   elPromoStripDetalle.textContent = detalle
   elPromoStrip.classList.remove('oculto')
+}
+
+// --- Hero rotativo ---
+// Arma una lista de "escenas" (producto fresco o promoción real) y las va
+// rotando cada pocos segundos. Si no hay nada especial que mostrar, cae en
+// un mensaje genérico pero con foto real de un producto -- nunca queda vacío
+// ni muestra un cartel de "oferta" inventado.
+let heroInterval = null
+let heroEscenas = []
+let heroIndice = 0
+
+const elHeroEyebrow = document.getElementById('hero-eyebrow')
+const elHeroTitulo = document.getElementById('hero-titulo')
+const elHeroSubtitulo = document.getElementById('hero-subtitulo')
+const elHeroNota = document.getElementById('hero-nota')
+const elHeroImgPrincipal = document.getElementById('hero-img-principal')
+const elHeroImgSecundaria = document.getElementById('hero-img-secundaria')
+
+function armarEscenasHero() {
+  const escenas = []
+
+  // 1. Una escena por cada promoción activa (la info real ya calculada)
+  promociones.forEach(promo => {
+    if (promo.tipo === 'oferta_producto') {
+      escenas.push({
+        eyebrow: 'OFERTA DE LA SEMANA',
+        titulo: promo.nombre,
+        subtitulo: `Ahora a ${formatoMoneda(promo.precio_oferta)}${promo.descripcion ? ' — ' + promo.descripcion : ''}`,
+      })
+    } else if (promo.tipo === 'descuento_porcentual') {
+      escenas.push({
+        eyebrow: 'DESCUENTO ACTIVO',
+        titulo: promo.nombre,
+        subtitulo: `${promo.descuento_pct}% menos, ya aplicado en cada producto.`,
+      })
+    } else if (promo.tipo === 'nxm') {
+      escenas.push({
+        eyebrow: 'PROMO',
+        titulo: promo.nombre,
+        subtitulo: `Llevás ${promo.cantidad_lleva} y pagás ${promo.cantidad_paga}.`,
+      })
+    } else if (promo.tipo === 'combo') {
+      escenas.push({
+        eyebrow: 'COMBO',
+        titulo: promo.nombre,
+        subtitulo: `Todo junto por ${formatoMoneda(promo.precio_combo)}.`,
+      })
+    }
+  })
+
+  // 2. Si no hay ninguna promoción activa, mostramos 1-2 productos frescos
+  // al azar como escena por defecto (con foto real si el producto la tiene)
+  if (escenas.length === 0 && productos.length > 0) {
+    const disponibles = [...productos].sort(() => Math.random() - 0.5).slice(0, 3)
+    disponibles.forEach(p => {
+      escenas.push({
+        eyebrow: 'FRESCO HOY',
+        titulo: p.nombre,
+        subtitulo: `${formatoMoneda(p.precio)}${p.tipo === 'peso' ? '/kg' : ''} · elegido para vos`,
+        foto: p.foto_url || null,
+      })
+    })
+  }
+
+  return escenas
+}
+
+function mostrarEscenaHero(escena) {
+  if (!escena) return
+  elHeroEyebrow.textContent = escena.eyebrow
+  elHeroTitulo.innerHTML = escena.titulo
+  elHeroSubtitulo.textContent = escena.subtitulo
+  if (escena.foto) {
+    elHeroImgPrincipal.src = escena.foto
+  }
+}
+
+function iniciarHeroRotativo() {
+  heroEscenas = armarEscenasHero()
+  heroIndice = 0
+  if (heroInterval) clearInterval(heroInterval)
+
+  if (heroEscenas.length === 0) return // se queda con el texto por defecto del HTML
+
+  mostrarEscenaHero(heroEscenas[0])
+  if (heroEscenas.length > 1) {
+    heroInterval = setInterval(() => {
+      heroIndice = (heroIndice + 1) % heroEscenas.length
+      mostrarEscenaHero(heroEscenas[heroIndice])
+    }, 5000)
+  }
 }
 
 // Devuelve, si existe, el % de descuento de marketing vigente para un producto
