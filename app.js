@@ -60,20 +60,49 @@ const UMBRAL_KG_OFERTA = 2
 function precioPorCantidad(p, cantidad) {
   const tieneOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
 
-  // La rebaja por maduración (lote) siempre gana sobre una promo de marketing.
+  // La rebaja por maduración (lote) siempre gana sobre cualquier promo de marketing.
   if (tieneOferta) {
     if (cantidad >= UMBRAL_KG_OFERTA) return Number(p.precio)
     return Number(p.precio_original)
   }
 
-  // Sin rebaja por maduración activa: recién ahí se puede aplicar un
-  // descuento de marketing (ej. "15% en Aromáticas").
-  const promoMkt = descuentoMarketingVigente(p)
-  if (promoMkt) {
-    return Number(p.precio) * (1 - promoMkt.descuento_pct / 100)
+  // Sin rebaja por maduración activa: se evalúan las promos de marketing
+  // que apliquen (oferta directa y/o descuento por categoría) y se cobra
+  // la que resulte más beneficiosa para el cliente -- nunca se acumulan.
+  const mejor = mejorPromoMarketing(p)
+  return mejor ? mejor.precio : Number(p.precio)
+}
+
+// Busca todas las promos de marketing vigentes que apliquen a este producto
+// (oferta_producto puntual, o descuento_porcentual de su categoría) y
+// devuelve la que le cobra menos al cliente.
+function mejorPromoMarketing(p) {
+  const candidatos = []
+
+  const promoOferta = promocionesDelProducto(p.id).find(promo => promo.tipo === 'oferta_producto')
+  if (promoOferta) {
+    candidatos.push({ precio: Number(promoOferta.precio_oferta), promo: promoOferta })
   }
 
-  return Number(p.precio)
+  const promoDescuento = descuentoMarketingVigente(p)
+  if (promoDescuento) {
+    candidatos.push({
+      precio: Number(p.precio) * (1 - promoDescuento.descuento_pct / 100),
+      promo: promoDescuento
+    })
+  }
+
+  if (candidatos.length === 0) return null
+  return candidatos.reduce((mejor, actual) => (actual.precio < mejor.precio ? actual : mejor))
+}
+
+// Todas las promociones vigentes que tienen a este producto vinculado
+// directamente (vía promocion_productos) -- hoy se usa para oferta_producto.
+function promocionesDelProducto(productoId) {
+  const promoIds = promocionProductos
+    .filter(pp => pp.producto_id === productoId)
+    .map(pp => pp.promocion_id)
+  return promociones.filter(promo => promoIds.includes(promo.id))
 }
 
 function mostrar(vista) {
@@ -82,11 +111,14 @@ function mostrar(vista) {
 }
 
 // --- Cargar catálogo ---
+let promocionProductos = []
+
 async function cargarProductos() {
-  const [resProductos, resCategorias, resPromociones] = await Promise.all([
+  const [resProductos, resCategorias, resPromociones, resPromoProductos] = await Promise.all([
     supabase.from('catalogo_disponible').select('*').order('nombre'),
     supabase.from('categorias').select('*').order('orden'),
-    supabase.from('promociones').select('*').eq('activa', true)
+    supabase.from('promociones').select('*').eq('activa', true),
+    supabase.from('promocion_productos').select('*')
   ])
 
   if (resProductos.error) {
@@ -97,6 +129,7 @@ async function cargarProductos() {
 
   productos = resProductos.data
   categorias = resCategorias.data || []
+  promocionProductos = resPromoProductos.data || []
   // Filtramos acá las vigentes por fecha (no todas las "activa=true" están
   // necesariamente dentro de su rango de fecha_desde/fecha_hasta hoy)
   const hoy = new Date().toISOString().slice(0, 10)
@@ -160,11 +193,20 @@ const elHeroNota = document.getElementById('hero-nota')
 const elHeroImgPrincipal = document.getElementById('hero-img-principal')
 const elHeroImgSecundaria = document.getElementById('hero-img-secundaria')
 
+const MAX_ESCENAS_HERO = 4
+
 function armarEscenasHero() {
   const escenas = []
 
-  // 1. Una escena por cada promoción activa (la info real ya calculada)
-  promociones.forEach(promo => {
+  // Ordenamos las promociones por prioridad: primero las marcadas "destacada",
+  // después por el campo "orden" (menor = primero) -- así si hay muchas,
+  // se muestran las que vos elegiste como más importantes, no cualquiera.
+  const promosOrdenadas = [...promociones].sort((a, b) => {
+    if (a.destacada !== b.destacada) return a.destacada ? -1 : 1
+    return (a.orden ?? 0) - (b.orden ?? 0)
+  })
+
+  promosOrdenadas.forEach(promo => {
     if (promo.tipo === 'oferta_producto') {
       escenas.push({
         eyebrow: 'OFERTA DE LA SEMANA',
@@ -192,21 +234,23 @@ function armarEscenasHero() {
     }
   })
 
-  // 2. Si no hay ninguna promoción activa, mostramos 1-2 productos frescos
-  // al azar como escena por defecto (con foto real si el producto la tiene)
-  if (escenas.length === 0 && productos.length > 0) {
+  // Si hay más promociones activas que el máximo, nos quedamos solo con
+  // las primeras (ya vienen ordenadas por destacada + orden).
+  let escenasFinal = escenas.slice(0, MAX_ESCENAS_HERO)
+
+  // Si no hay NINGUNA promoción activa, mostramos productos frescos al azar
+  // como escena por defecto (con foto real si el producto la tiene).
+  if (escenasFinal.length === 0 && productos.length > 0) {
     const disponibles = [...productos].sort(() => Math.random() - 0.5).slice(0, 3)
-    disponibles.forEach(p => {
-      escenas.push({
-        eyebrow: 'FRESCO HOY',
-        titulo: p.nombre,
-        subtitulo: `${formatoMoneda(p.precio)}${p.tipo === 'peso' ? '/kg' : ''} · elegido para vos`,
-        foto: p.foto_url || null,
-      })
-    })
+    escenasFinal = disponibles.map(p => ({
+      eyebrow: 'FRESCO HOY',
+      titulo: p.nombre,
+      subtitulo: `${formatoMoneda(p.precio)}${p.tipo === 'peso' ? '/kg' : ''} · elegido para vos`,
+      foto: p.foto_url || null,
+    }))
   }
 
-  return escenas
+  return escenasFinal
 }
 
 function mostrarEscenaHero(escena) {
@@ -295,12 +339,12 @@ function renderProductos() {
     }
 
     const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
-    const promoMkt = !esOferta ? descuentoMarketingVigente(p) : null
+    const mejorPromo = !esOferta ? mejorPromoMarketing(p) : null
     const descuentoPct = esOferta
       ? Math.round((1 - p.precio / p.precio_original) * 100)
-      : (promoMkt ? promoMkt.descuento_pct : 0)
+      : (mejorPromo ? Math.round((1 - mejorPromo.precio / Number(p.precio)) * 100) : 0)
     const precioMostrado = esOferta ? p.precio_original : p.precio
-    const tieneAlgunDescuento = esOferta || !!promoMkt
+    const tieneAlgunDescuento = esOferta || !!mejorPromo
 
     card.innerHTML = `
       <div class="foto-wrap">
