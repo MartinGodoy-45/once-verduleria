@@ -96,6 +96,29 @@ function mejorPromoMarketing(p) {
   return candidatos.reduce((mejor, actual) => (actual.precio < mejor.precio ? actual : mejor))
 }
 
+// "Precio de vidriera": el número que se muestra de entrada, ANTES de que
+// el cliente elija cantidad -- no depende de cuánto va a comprar (eso lo
+// resuelve precioPorCantidad, en el carrito). Esta es la única fuente de
+// verdad para ese número: la usan tanto la tarjeta del catálogo como el
+// hero, así es imposible que se desincronicen entre sí.
+function precioVidriera(p) {
+  const tieneOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
+  if (tieneOferta) {
+    return {
+      precio: Number(p.precio_original),
+      pctOff: Math.round((1 - p.precio / p.precio_original) * 100)
+    }
+  }
+  const mejor = mejorPromoMarketing(p)
+  if (mejor) {
+    return {
+      precio: mejor.precio,
+      pctOff: Math.round((1 - mejor.precio / Number(p.precio)) * 100)
+    }
+  }
+  return { precio: Number(p.precio), pctOff: 0 }
+}
+
 // Todas las promociones vigentes que tienen a este producto vinculado
 // directamente (vía promocion_productos) -- hoy se usa para oferta_producto.
 function promocionesDelProducto(productoId) {
@@ -198,54 +221,66 @@ const MAX_ESCENAS_HERO = 4
 function armarEscenasHero() {
   const escenas = []
 
-  // Ordenamos las promociones por prioridad: primero las marcadas "destacada",
-  // después por el campo "orden" (menor = primero) -- así si hay muchas,
-  // se muestran las que vos elegiste como más importantes, no cualquiera.
-  const promosOrdenadas = [...promociones].sort((a, b) => {
-    if (a.destacada !== b.destacada) return a.destacada ? -1 : 1
-    return (a.orden ?? 0) - (b.orden ?? 0)
-  })
+  // CAMBIO: el hero ya no muestra "cualquier promo activa" -- solo las que
+  // vos marcaste explícitamente como "destacada". Vos decidís qué entra acá,
+  // no un algoritmo. Entre las destacadas, se ordenan por el campo "orden"
+  // (menor = primero).
+  const promosDestacadas = promociones
+    .filter(promo => promo.destacada)
+    .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
 
-  promosOrdenadas.forEach(promo => {
+  promosDestacadas.forEach(promo => {
     if (promo.tipo === 'oferta_producto') {
+      const vinculo = promocionProductos.find(pp => pp.promocion_id === promo.id)
+      const productoReal = vinculo ? productos.find(p => p.id === vinculo.producto_id) : null
+
       escenas.push({
         eyebrow: 'OFERTA DE LA SEMANA',
-        titulo: promo.nombre,
-        subtitulo: `Ahora a ${formatoMoneda(promo.precio_oferta)}${promo.descripcion ? ' — ' + promo.descripcion : ''}`,
+        titulo: productoReal ? productoReal.nombre : promo.nombre,
+        // precioVidriera() es la MISMA función que usa la tarjeta -- por
+        // construcción, hero y tarjeta nunca pueden mostrar números distintos.
+        subtitulo: productoReal
+          ? `Ahora a ${formatoMoneda(precioVidriera(productoReal).precio)}${productoReal.tipo === 'peso' ? '/kg' : ''}`
+          : `Ahora a ${formatoMoneda(promo.precio_oferta)}`,
+        // Prioridad de imagen: la que cargaste específicamente para marketing
+        // (promo.imagen_url) -- si no cargaste ninguna, cae en la foto real
+        // del producto para no dejar el hero sin imagen.
+        foto: promo.imagen_url || (productoReal ? productoReal.foto_url : null),
       })
     } else if (promo.tipo === 'descuento_porcentual') {
       escenas.push({
         eyebrow: 'DESCUENTO ACTIVO',
         titulo: promo.nombre,
         subtitulo: `${promo.descuento_pct}% menos, ya aplicado en cada producto.`,
+        foto: promo.imagen_url || null,
       })
     } else if (promo.tipo === 'nxm') {
       escenas.push({
         eyebrow: 'PROMO',
         titulo: promo.nombre,
         subtitulo: `Llevás ${promo.cantidad_lleva} y pagás ${promo.cantidad_paga}.`,
+        foto: promo.imagen_url || null,
       })
     } else if (promo.tipo === 'combo') {
       escenas.push({
         eyebrow: 'COMBO',
         titulo: promo.nombre,
         subtitulo: `Todo junto por ${formatoMoneda(promo.precio_combo)}.`,
+        foto: promo.imagen_url || null,
       })
     }
   })
 
-  // Si hay más promociones activas que el máximo, nos quedamos solo con
-  // las primeras (ya vienen ordenadas por destacada + orden).
   let escenasFinal = escenas.slice(0, MAX_ESCENAS_HERO)
 
-  // Si no hay NINGUNA promoción activa, mostramos productos frescos al azar
-  // como escena por defecto (con foto real si el producto la tiene).
+  // Si no marcaste ninguna promo como destacada, mostramos productos frescos
+  // al azar (contenido neutro, no es una afirmación de precio ni de oferta).
   if (escenasFinal.length === 0 && productos.length > 0) {
     const disponibles = [...productos].sort(() => Math.random() - 0.5).slice(0, 3)
     escenasFinal = disponibles.map(p => ({
       eyebrow: 'FRESCO HOY',
       titulo: p.nombre,
-      subtitulo: `${formatoMoneda(p.precio)}${p.tipo === 'peso' ? '/kg' : ''} · elegido para vos`,
+      subtitulo: `${formatoMoneda(precioVidriera(p).precio)}${p.tipo === 'peso' ? '/kg' : ''} · elegido para vos`,
       foto: p.foto_url || null,
     }))
   }
@@ -338,13 +373,10 @@ function renderProductos() {
         </div>`
     }
 
-    const esOferta = p.precio_original && Number(p.precio_original) > Number(p.precio)
-    const mejorPromo = !esOferta ? mejorPromoMarketing(p) : null
-    const descuentoPct = esOferta
-      ? Math.round((1 - p.precio / p.precio_original) * 100)
-      : (mejorPromo ? Math.round((1 - mejorPromo.precio / Number(p.precio)) * 100) : 0)
-    const precioMostrado = esOferta ? p.precio_original : p.precio
-    const tieneAlgunDescuento = esOferta || !!mejorPromo
+    const vidriera = precioVidriera(p)
+    const descuentoPct = vidriera.pctOff
+    const precioMostrado = vidriera.precio
+    const tieneAlgunDescuento = vidriera.pctOff > 0
 
     card.innerHTML = `
       <div class="foto-wrap">
