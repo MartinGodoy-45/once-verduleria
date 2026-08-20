@@ -390,7 +390,7 @@ function renderProductos() {
       <span class="nombre">${p.nombre}</span>
       <span class="precio">${formatoMoneda(precioMostrado)}${unidad}</span>
       ${controles}
-      ${esOferta && esPeso ? `<p class="ejemplo-oferta">Llevando 2kg: ${formatoMoneda(p.precio * 2)}</p>` : ''}
+      ${(p.precio_original && Number(p.precio_original) > Number(p.precio) && esPeso) ? `<p class="ejemplo-oferta">Llevando 2kg: ${formatoMoneda(p.precio * 2)}</p>` : ''}
     `
     elLista.appendChild(card)
   })
